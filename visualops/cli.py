@@ -53,7 +53,6 @@ def main():
 
 	run_parser = subparsers.add_parser('run', help='deploy the stack')
 	run_parser.add_argument('id', help='the stack id)
-	run_parser.add_argument('--public', action='store_true', help='make track public')
 	run_parser.add_argument('-l', '--local', action='store_true', dest='run_stack_local', help='deploy the stack locally')
 	run_parser.add_argument('-a', '--aws', action='store_true', dest='run_stack_aws', help='deplocal the stack at AWS')
 	run_parser.set_defaults(command=cmd.run)

@@ -11,3 +11,8 @@ def lists(args):
 		apps = client.app_list()
 		display_app(apps)
 
+def display_stack(stack):
+	
+def display_app(app):
+
+

@@ -1,10 +1,10 @@
 from ../utils import rpc
 
 def login(args):
-	username = raw_input('Please enter your account name or registered email: ')
+	username = raw_input('Enter usename or email: ')
 	if not username:
 
-	passwd = raw_input('Please enter your password: ')
+	passwd = raw_input('Enter password: ')
 
 	# login
 	(err, client) = rpc.login(username, password)
