@@ -18,10 +18,12 @@ def _call(url, method, params):
     )
     return rlt.json()["result"]
 
+### session operation ###
 def login(username, password):
 	params = [username, password]
 	return _call('session', 'login', params)
 
+### stack operation ###
 def stack_list(username, session_id, region_name):
     params = [username, session_id, region_name]
     return _call('stack', 'list', params)
@@ -29,3 +31,12 @@ def stack_list(username, session_id, region_name):
 def stack_info(username, session_id, region_name, stack_ids):
     params = [username, session_id, region_name, stack_ids]
     return _call('stack', 'info', params)
+
+### app operation ###
+def app_list(username, session_id, region_name):
+    params = [username, session_id, region_name]
+    return _call('app', 'list', params)
+
+def app_info(username, session_id, region_name, app_ids):
+    params = [username, session_id, region_name, app_ids]
+    return _call('app', 'info', params)

@@ -7,7 +7,7 @@ from datetime import date
 DEFAULT_YEAR  = date.today().year
 PROGRESS_RE = re.compile(r'\((\s?\d+)%\)')
 
-def load_session:
+def load_session():
 	with open(os.path.join(os.environ['HOME']), '.visualops/session') as f:
 		yaml = f.readlines()
 	return (yaml.username, yaml.session_id)

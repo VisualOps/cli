@@ -5,7 +5,8 @@ from visualops.utils import rpc
 from cliff.command import Command
 
 class Login(Command):
-    "login and write session to ~/.visualops/session.ini"
+    "Login in VisualOps. Once succeceed, the session will be persisted for the next 24 hours, or another login takes somewhere else."
+    #store session to ~/.visualops/session.ini
 
     log = logging.getLogger(__name__)
 
@@ -20,8 +21,6 @@ class Login(Command):
 
         # login
         (err, result) = rpc.login(username, passwd)
-        # import pudb
-        # pudb.set_trace()
 
         if err:
             raise RuntimeError('login failed:( ({0})'.format(err))
@@ -41,3 +40,12 @@ class Login(Command):
                 for i in range(len(k)):
                     file.write( k[i] + " = " + unicode(str(v[i])) + "\n" )
             self.app.stdout.write( 'wrote to {0} succeed!\n'.format(ini_file) )
+
+
+class Logout(Command):
+    "Logout from VisualOps, and remove the persisted temporary session"
+
+    log = logging.getLogger(__name__)
+
+    def take_action(self, parsed_args):
+        self.app.stdout.write('logout TO-DO!\n')

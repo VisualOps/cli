@@ -1,4 +1,4 @@
-from ../utils import rpc
+from visualops.utils import rpc
 
 def login(args):
 	username = raw_input('Enter usename or email: ')
@@ -7,7 +7,7 @@ def login(args):
 	passwd = raw_input('Enter password: ')
 
 	# login
-	(err, client) = rpc.login(username, password)
+	(err, client) = rpc.login(username, passwd)
 	if err:
 	else:
 		with open(os.path.join(os.environ['HOME']), '/.visualops/login', 'w+') as f:

@@ -25,13 +25,28 @@ setup(
             'visualops = visualops.main:main'
         ],
         'visualops.cli': [
-            'login = visualops.cmd.session:Login',
-            'stack list = visualops.cmd.stack:List',
-            'stack info = visualops.cmd.stack:Info',
-            'simple = visualops.demo.simple:Simple',
-            'listfile = visualops.demo.list:Files',
-            'showfile = visualops.demo.show:File',
-            'error = visualops.demo.simple:Error',
+            'login      = visualops.cmd.session:Login',
+            'logout     = visualops.cmd.session:Logout',
+
+            'list stack = visualops.cmd.stack.list:List',
+            'info stack = visualops.cmd.stack.info:Info',
+            'pull       = visualops.cmd.stack.pull:Pull',
+            'push       = visualops.cmd.stack.push:Push',
+            'run        = visualops.cmd.stack.run:Run',
+            'delete     = visualops.cmd.stack.delete:Delete',
+
+            'list app  = visualops.cmd.app.list:List',
+            'info app  = visualops.cmd.app.info:Info',
+            'stop      = visualops.cmd.app.stop:Stop',
+            'start     = visualops.cmd.app.start:Start',
+            'reboot    = visualops.cmd.app.reboot:Reboot',
+            'clone     = visualops.cmd.app.clone:Clone',
+            'terminate = visualops.cmd.app.terminate:Terminate',
+
+            'simple    = visualops.demo.simple:Simple',
+            'listfile  = visualops.demo.list:Files',
+            'showfile  = visualops.demo.show:File',
+            'error     = visualops.demo.simple:Error',
         ],
     },
 )
