@@ -6,7 +6,7 @@ import argparse
 from __init__ import __version__
 from .utils import settings, utils
 from . import cmd
-	
+
 def print_shared_with(users):
 	print 'shared with:'
 	for user in users:
@@ -20,10 +20,10 @@ def main():
 	#viso run -f stack_yaml [--local / aws]
 	#viso login
 	#viso logout
-	
+
 	# load session
 	session = Session(os.path.join(os.environ['HOME']), '/.visualops/session')
-	
+
 	# setup args
 	parser = argparse.ArgumentParser('VisualOps CLI: www.visualops.io')
 	parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
@@ -52,7 +52,7 @@ def main():
 	push_parser.set_defaults(command=cmd.push)
 
 	run_parser = subparsers.add_parser('run', help='deploy the stack')
-	run_parser.add_argument('id', help='the stack id)
+	run_parser.add_argument('id', help='the stack id')
 	run_parser.add_argument('-l', '--local', action='store_true', dest='run_stack_local', help='deploy the stack locally')
 	run_parser.add_argument('-a', '--aws', action='store_true', dest='run_stack_aws', help='deplocal the stack at AWS')
 	run_parser.set_defaults(command=cmd.run)
