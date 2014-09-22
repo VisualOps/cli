@@ -1093,4 +1093,6 @@ def deploy(config, state):
 
 #TODO
 def generate_hosts(app):
-    pass
+    hosts = {app[container]["NetworkSettings"]["IPAddress"]:[app[container]["Name"].replace('/','')] for container in app}
+    for container in app:
+        path = app[container]["HostsPath"]
