@@ -915,13 +915,27 @@ def _create_files(config, state_params, exec_params):
         volumes.append({"key":host_path,"value":path})
     return exec_params.get("volumes",[])+volumes
 
-def _convert_running(config, addin):
+def _replace_params():
+
+
+def _convert_running(config, hostname, addin):
+    addin = _replace_params(config, hostname, addin)
     if addin.get("port_bindings"):
         ports = []
         pb = {}
         for item in addin["port_bindings"]:
             key = item.get("key",None)
             value = item.get("value",None)
+            if not key or not value: continue
+
+            ui = user_param(config,
+                            "Update port binding for %s: %s:%s"%(addin["container"],key,value),
+                            (None if config.get("interactive") else "%s:%s"%(key,value)))
+            if not ui: continue
+            ui = ui.split(":")
+            if len(ui) != 2: continue
+            key, value = ui[0], ui[1]
+
             if not key or not value: continue
             v = value.split(":")
             pb[key] = ({
@@ -1041,7 +1055,7 @@ _deploy = {
 }
 
 
-def deploy(config, state):
+def deploy(config, hostname, state):
     if "container" not in state:
         error("Container name missing")
         return {}
@@ -1065,7 +1079,7 @@ def deploy(config, state):
                 params[_deploy['attr'][action][param]] = state[param]
         if hasattr(eval(action), '__call__'):
             if action in _deploy.get("convert",{}):
-                params = _deploy["convert"][action](config, params)
+                params = _deploy["convert"][action](config, hostname, params)
             out[action] = eval(action)(*params, **params)
         else:
             error("Action not found: %s"%action)

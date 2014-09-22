@@ -269,7 +269,9 @@ config = {
 
     "volumes": {
         "hostname": {
-            "container": "/foo:/bar",
+            "container": {
+                "/foo": "/bar",
+            },
         },
     },
 
