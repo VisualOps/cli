@@ -46,7 +46,7 @@ pudb.set_trace()
 
 
 [usage]
-==================================================
+===
 ##1.enter virtual python environment
 $ . .venv/bin/activate
 
@@ -63,23 +63,24 @@ $ . .venv/bin/activate
 
 (.venv)$ visualops -v stack list us-east-1
 
-(.venv)$ visualops stack info ap-southeast-1 stack-993a496d
+(.venv)$ visualops stack info ap-southeast-1 stack-xxxxxxxx
 
 ##5.demo
-(.venv)$ visualops error --debug
+(.venv)$ visualops demo error
 
-(.venv)$ visualops listfile -f yaml # csv,table,html,json,yaml
+(.venv)$ visualops demo error --debug
 
-(.venv)$ visualops showfile -f shell
+(.venv)$ visualops demo list -f yaml # csv,table,html,json,yaml
+
+(.venv)$ visualops demo show -f shell
 
 
-
-support auto-complete
+[support auto-complete]
 ===
 ##1.generate `bash_complete script`
 (.venv)$ visualops complete
 
-`bash_complete script` sample:
+`bash_complete script` sample like:
 <pre>
 _visualops()
 {

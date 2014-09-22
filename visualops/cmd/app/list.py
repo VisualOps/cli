@@ -24,9 +24,6 @@ class List(Lister):
         config.read(ini_file)
         username   = config.get("config","username")
         session_id = config.get("config","session_id")
-
-        # import pudb
-        # pudb.set_trace()
  
         # get app list
         (err, result) = rpc.app_list(username, session_id, parsed_args.region_name)
