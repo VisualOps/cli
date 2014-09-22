@@ -509,11 +509,11 @@ def start(container, binds=None, ports=None, port_bindings=None,
         dcontainer = _get_container_infos(container)['id']
         if not is_running(container):
             bindings = None
-#            if port_bindings is not None:
-#                print "Binding container ports ..."
-#                bindings = {}
-#                for k, v in port_bindings.iteritems():
-#                    bindings[k] = (v.get('HostIp', ''), v['HostPort'])
+            if port_bindings is not None:
+                print "Binding container ports ..."
+                bindings = {}
+                for k, v in port_bindings.iteritems():
+                    bindings[k] = (v.get('HostIp', ''), v['HostPort'])
             client.start(dcontainer, binds=binds, port_bindings=bindings,
                          lxc_conf=lxc_conf,
                          publish_all_ports=publish_all_ports, links=links,
@@ -931,6 +931,7 @@ def _convert_running(config, appname, hostname, addin):
     addin["volumes"] = _replace_params(config, hostname, addin,"volumes")
     addin["mem_limit"] = _replace_params(config, hostname, addin,"mem_limit")
     addin["cpu_shares"] = _replace_params(config, hostname, addin,"cpu_shares")
+    addin["count"] = _replace_params(config, hostname, addin,"count")
     if addin.get("port_bindings"):
         ports = []
         pb = {}
@@ -1064,6 +1065,15 @@ def _convert_running(config, appname, hostname, addin):
     if not addin.get("count"):
         addin["containers"] = [addin["container"]]
     else:
+        # get user input
+        ui = user_param(config,
+                        "Update number of containers for %s"%(addin["container"]),
+                        addin["count"])
+        # parse result
+        addin["count"] = ui
+        # persist
+        config["count"][hostname][addin["container"]] = ui
+
         addin["containers"] = []
         count = int(addin["count"])
         i=0
@@ -1094,9 +1104,9 @@ _deploy = {
             'cpu_shares'    : 'cpu_shares',
             'ports'         : 'ports',
             # running
-            'publish_all_ports': 'publish_all_ports',
+#            'publish_all_ports': 'publish_all_ports',
             'binds'         : 'binds',
-            'links'         : 'links',
+#            'links'         : 'links',
             'port_bindings' : 'port_bindings',
             'count'         : 'count',
             # deploy
@@ -1148,12 +1158,6 @@ def deploy(config, appname, hostname, state):
         app[name] = container
     return app
 ##
-
-#config = {
-#    "interactive": True,
-#    "chroot": "/docker",
-#    "config_path": "~/.visualops",
-#}
 
 #app = {
 #    "container_name": {

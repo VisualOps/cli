@@ -81,7 +81,7 @@ Push a stack to VisualOps
 
     Done!
 
-run [--local] [-lpq] [-r chroot] [-v [/host:/container]] [-b [hostname:container=source_port:dest_port]] [-m memory_size] [-p cpu-shares] [-c config_directory]
+run [--local] [-lpq] [-r chroot] [-v [/host:/container]] [-b [hostname:container=source_port:dest_port]] [-m memory_size] [-p cpu-shares] [-n containers_number] [-c config_directory]
 ~~~~~~
 
 Deploy the stack locally, or in the cloud
@@ -98,6 +98,7 @@ Deploy the stack locally, or in the cloud
     Update mount point for my/node: /data=/data [None]:
     Update port binding for my/node: 80=80 [None]: 80:80
     Update port binding for my/node: 6666=6666 [None]:
+    Update number of containers for my/node: [2]: 1
 
     pulling image my/node ......
     pulling image my/postgres ......
@@ -142,6 +143,10 @@ Note: Enter no value to lift the limit
       Override stack CPU shares
 Example: -p 1
 Note: Enter no value to lift the limit
+
+`-n`: Number of containers (default: 1)
+      Override the number of containers to run (count option)
+Exemple: -n 2
 
 `-c`: Configuration path (default: ~/.visualops):
       The path to the configuration directory (where stacks details and containers configuration files are saved)
@@ -218,7 +223,7 @@ Reboot a local app or some containers
 
     Done! Successfully reboot node-dev.
 
-clone [-lpq] [-r chroot] [-v [/host:/container]] [-b [hostname:container=source_port:dest_port]] [-m memory_size] [-p cpu-shares] [-c config_directory]
+clone [-lpq] [-r chroot] [-v [/host:/container]] [-b [hostname:container=source_port:dest_port]] [-m memory_size] [-p cpu-shares] [-n containers_number] [-c config_directory]
 ~~~~~~
 
 Clone a remote app to local
@@ -237,6 +242,7 @@ Clone a remote app to local
     Update mount point for my/node: /data=/data [None]:
     Update port binding for my/node: 80=80 [None]: 80:80
     Update port binding for my/node: 6666=6666 [None]:
+    Update number of containers for my/node: [2]: 1
 
     pulling image my/node ......
     pulling image my/postgres ......
