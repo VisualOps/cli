@@ -915,11 +915,18 @@ def _create_files(config, state_params, exec_params):
         volumes.append({"key":host_path,"value":path})
     return exec_params.get("volumes",[])+volumes
 
-def _replace_params():
-
+def _replace_params(config, hostname, addin, param):
+    config.setdefault(param,{})
+    config[param].setdefault(hostname,{})
+    config[param][hostname].setdefault(addin["container"],{})
+    res = config[param][hostname][addin["container"]]
+    if res:
+        return [{"key":key,"value":res[key]} for key in res]
+    return addin[param]
 
 def _convert_running(config, hostname, addin):
-    addin = _replace_params(config, hostname, addin)
+    addin["port_bindings"] = _replace_params(config, hostname, addin,"port_bindings")
+    addin["volumes"] = _replace_params(config, hostname, addin,"volumes")
     if addin.get("port_bindings"):
         ports = []
         pb = {}
@@ -928,13 +935,17 @@ def _convert_running(config, hostname, addin):
             value = item.get("value",None)
             if not key or not value: continue
 
+            # get user input
             ui = user_param(config,
                             "Update port binding for %s: %s:%s"%(addin["container"],key,value),
-                            (None if config.get("interactive") else "%s:%s"%(key,value)))
+                            (None if not config["port_bindings"][hostname][addin["container"]] else "%s:%s"%(key,value)))
+            # parse result
             if not ui: continue
             ui = ui.split(":")
             if len(ui) != 2: continue
             key, value = ui[0], ui[1]
+            # persist
+            config["port_bindings"][hostname][addin["container"]] = "%s:%s"%((key if key else ""),(value if value else ""))
 
             if not key or not value: continue
             v = value.split(":")

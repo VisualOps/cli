@@ -81,7 +81,7 @@ Push a stack to VisualOps
 
     Done!
 
-run [--local] [-pq] [-r chroot] [-v [/host:/container]] [-p [hostname:container=source_port:dest_port]] [-c config_directory]
+run [--local] [-lpq] [-r chroot] [-v [/host:/container]] [-b [hostname:container=source_port:dest_port]] [-m memory_size] [-p cpu-shares] [-c config_directory]
 ~~~~~~
 
 Deploy the stack locally, or in the cloud
@@ -150,9 +150,9 @@ Example: -c ~/.visualops
 `-k`: Keep (default: no)
       Keep the stack options (volumes, ports bindings, memory size, cpu shares)
 
-`-i`: Ignore (default: no)
-      Reset and delete the stack options.
-Note: If used with `-p`, it will replace the old options.
+`-l`: Load (default: no)
+      Load config saved with `-k`
+Note: If no config is available, this parameter won't take any action.
 
 terminate
 ~~~~~~
@@ -277,7 +277,7 @@ config = {
 
     "chroot": "/path",
 
-    "bindings": {
+    "port_bindings": {
         "hostnameA": {
             "containerA": {
                 "0.0.0.0:80": "80/tcp",
