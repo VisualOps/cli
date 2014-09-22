@@ -920,32 +920,42 @@ def _replace_params(config, hostname, addin, param):
     config[param].setdefault(hostname,{})
     config[param][hostname].setdefault(addin["container"],{})
     res = config[param][hostname][addin["container"]]
-    if res:
+    if res and type(res) is dict:
         return [{"key":key,"value":res[key]} for key in res]
+    elif res:
+        return res
     return addin[param]
 
-def _convert_running(config, hostname, addin):
+def _convert_running(config, appname, hostname, addin):
     addin["port_bindings"] = _replace_params(config, hostname, addin,"port_bindings")
     addin["volumes"] = _replace_params(config, hostname, addin,"volumes")
+    addin["mem_limit"] = _replace_params(config, hostname, addin,"mem_limit")
+    addin["cpu_shares"] = _replace_params(config, hostname, addin,"cpu_shares")
     if addin.get("port_bindings"):
         ports = []
         pb = {}
         for item in addin["port_bindings"]:
             key = item.get("key",None)
             value = item.get("value",None)
-            if not key or not value: continue
+            if not key: continue
 
             # get user input
             ui = user_param(config,
-                            "Update port binding for %s: %s:%s"%(addin["container"],key,value),
-                            (None if not config["port_bindings"][hostname][addin["container"]] else "%s:%s"%(key,value)))
+                            "Update port binding for %s: %s=%s"%(addin["container"],key,value),
+                            (None
+                             if key not in config["port_bindings"][hostname][addin["container"]]
+                             else "%s=%s"%((key if key else ""),(value if value else ""))))
             # parse result
-            if not ui: continue
-            ui = ui.split(":")
-            if len(ui) != 2: continue
+            if not ui:
+                config["port_bindings"][hostname][addin["container"]][key] = value
+                continue
+            ui = ui.split("=")
+            if len(ui) != 2:
+                error("Wrong port binding syntax")
+                continue
             key, value = ui[0], ui[1]
             # persist
-            config["port_bindings"][hostname][addin["container"]] = "%s:%s"%((key if key else ""),(value if value else ""))
+            config["port_bindings"][hostname][addin["container"]][key] = value
 
             if not key or not value: continue
             v = value.split(":")
@@ -966,12 +976,30 @@ def _convert_running(config, hostname, addin):
         binds = {}
         vol = addin.get("volumes",{})
         for item in vol:
-            if not item.get("value") or not item.get("key"): continue
-            value = item["value"]
-            key = user_param(config, "Enter custom path for mount point %s"%value, item["key"])
+            key = item.get("key")
+            value = item.get("value")
             if not key: continue
+
+            # get user input
+            ui = user_param(config,
+                            "Update mount point for %s: %s=%s"%(addin["container"],key,value),
+                            (None
+                             if not config["volumes"][hostname][addin["container"]][key]
+                             else "%s=%s"%((key if key else ""),(value if value else ""))))
+            # parse result
+            if not ui:
+                config["volumes"][hostname][addin["container"]][key] = value
+                continue
+            ui = ui.split("=")
+            if len(ui) != 2:
+                error("Wrong volume syntax")
+                continue
+            key, value = ui[0], ui[1]
             if config.get("chroot"):
-                key = os.path.join(config["chroot"],key)
+                key = os.path.join(config["chroot"],appname,hostname,addin["container"],key)
+            # persist
+            config["volumes"][hostname][addin["container"]][key] = value
+
             mp = value.split(":")
             ro = (True if (len(mp) == 2 and mp[1] == "ro") else False)
             value = mp[0]
@@ -1003,9 +1031,28 @@ def _convert_running(config, hostname, addin):
         addin.pop("links")
         addin["links"] = links
     if addin.get("cpu_shares"):
-        addin["cpu_shares"] = user_param(config, "Enter custom cpu shares", addin["cpu_shares"])
+        # get user input
+        ui = user_param(config,
+                        "Update CPU shares for %s: %s"%(addin["container"],addin.get("cpu_shares")),
+                        (None
+                         if not config["volumes"][hostname][addin["container"]][key]
+                         else addin.get("cpu_shares")))
+        # parse result
+        addin["cpu_shares"] = ui
+        # persist
+        config["cpu_shares"][hostname][addin["container"]] = ui
     if addin.get("mem_limit"):
-        mem = user_param(config, "Enter custom mememory limit", addin["mem_limit"])
+        # get user input
+        ui = user_param(config,
+                        "Update memory limit for %s: %s"%(addin["container"],addin.get("mem_limit")),
+                        (None
+                         if not config["volumes"][hostname][addin["container"]][key]
+                         else addin.get("mem_limit")))
+        # parse result
+        mem = ui
+        # persist
+        config["cpu_shares"][hostname][addin["container"]] = ui
+
         mem_eq={
             'b': lambda x: x,
             'k': lambda x: x << 10,
@@ -1066,7 +1113,7 @@ _deploy = {
 }
 
 
-def deploy(config, hostname, state):
+def deploy(config, appname, hostname, state):
     if "container" not in state:
         error("Container name missing")
         return {}
@@ -1090,7 +1137,7 @@ def deploy(config, hostname, state):
                 params[_deploy['attr'][action][param]] = state[param]
         if hasattr(eval(action), '__call__'):
             if action in _deploy.get("convert",{}):
-                params = _deploy["convert"][action](config, hostname, params)
+                params = _deploy["convert"][action](config, appname, hostname, params)
             out[action] = eval(action)(*params, **params)
         else:
             error("Action not found: %s"%action)

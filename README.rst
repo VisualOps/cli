@@ -94,10 +94,10 @@ Deploy the stack locally, or in the cloud
     Enter the app name: node-dev
     Enter the cpu share for my/node: 1 [None]:
     Enter the mem size for my/node: 128m [None]: 512m
-    Update mount point for my/node: /home/ec2-user/www:/var/www/html [None]: /home/jimmy/www:/var/www/html
-    Update mount point for my/node: /data:/data [None]:
-    Update port binding for my/node: 80:80 [None]: 80:80
-    Update port binding for my/node: 6666:6666 [None]:
+    Update mount point for my/node: /home/ec2-user/www=/var/www/html [None]: /home/jimmy/www=/var/www/html
+    Update mount point for my/node: /data=/data [None]:
+    Update port binding for my/node: 80=80 [None]: 80:80
+    Update port binding for my/node: 6666=6666 [None]:
 
     pulling image my/node ......
     pulling image my/postgres ......
@@ -218,7 +218,7 @@ Reboot a local app or some containers
 
     Done! Successfully reboot node-dev.
 
-clone [-pq] [-r chroot] [-v [/host:/container]] [-p [hostname:container=source_port:dest_port]] [-c config_directory]
+clone [-lpq] [-r chroot] [-v [/host:/container]] [-b [hostname:container=source_port:dest_port]] [-m memory_size] [-p cpu-shares] [-c config_directory]
 ~~~~~~
 
 Clone a remote app to local
@@ -233,10 +233,10 @@ Clone a remote app to local
     Enter the app name: node-dev
     Enter the cpu share for my/node: 1 [None]:
     Enter the mem size for my/node: 128m [None]: 512m
-    Update mount point for my/node: /home/ec2-user/www:/var/www/html [None]: /home/jimmy/www:/var/www/html
-    Update mount point for my/node: /data:/data [None]:
-    Update port binding for my/node: 80:80 [None]: 80:80
-    Update port binding for my/node: 6666:6666 [None]:
+    Update mount point for my/node: /home/ec2-user/www=/var/www/html [None]: /home/jimmy/www=/var/www/html
+    Update mount point for my/node: /data=/data [None]:
+    Update port binding for my/node: 80=80 [None]: 80:80
+    Update port binding for my/node: 6666=6666 [None]:
 
     pulling image my/node ......
     pulling image my/postgres ......
@@ -272,6 +272,18 @@ config = {
             "container": {
                 "/foo": "/bar",
             },
+        },
+    },
+
+    "cpu_shares": {
+        "hostname": {
+            "container": "1",
+        },
+    },
+
+    "mem_limit": {
+        "hostname": {
+            "container": "512m",
         },
     },
 
