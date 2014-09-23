@@ -19,7 +19,7 @@ class List(Lister):
 
         (username, session_id)   = utils.load_session()
         if not(username and session_id):
-            return ('Name', 'Region', 'Id', 'URL', 'Position'),()
+            return (),()
  
         # get stack list
         (err, result) = rpc.stack_list(username, session_id, parsed_args.region_name)
