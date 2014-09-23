@@ -1,5 +1,5 @@
 '''
-Docker module
+Docker module (docker-py wrapper)
 @author: Thibault BRONCHAIN
 (c) 2014 - MadeiraCloud LTD.
 
@@ -11,6 +11,7 @@ import json
 import os
 import docker
 
+import boot2docker
 from utils import error,warning,user_param
 
 ## Helpers
@@ -72,9 +73,9 @@ def _set_id(infos):
         if infos.get("Id"): id = infos["Id"]
         elif infos.get("ID"): id = infos["ID"]
         elif infos.get("id"): id = infos["id"]
-        if "id" not in infos:
-            infos["id"] = id
-        infos.pop("Id")
+        if "Id" not in infos:
+            infos["Id"] = id
+        infos.pop("id")
         infos.pop("ID")
     return infos
 
@@ -165,7 +166,7 @@ def _parse_image_multilogs_string(ret, repo):
         # search last layer grabbed
         for l in image_logs:
             if isinstance(l, dict):
-                if l.get('status') == 'Download complete' and l.get('id'):
+                if l.get('status') == 'Download complete' and l.get('Id'):
                     infos = _get_image_infos(repo)
                     break
     return image_logs, infos
@@ -350,7 +351,7 @@ def create_container(image,
             name=name,
             cpu_shares=cpu_shares
         ))
-        print "Container '%s' created."%info['id']
+        print "Container '%s' created."%info['Id']
         return info
     except Exception as e:
         err = e
@@ -375,7 +376,7 @@ def stop(container, timeout=10, *args, **kwargs):
     err = "Unknown"
     client = _get_client()
     try:
-        dcontainer = _get_container_infos(container)['id']
+        dcontainer = _get_container_infos(container)['Id']
         if is_running(dcontainer):
             client.stop(dcontainer, timeout=timeout)
             if not is_running(dcontainer):
@@ -403,7 +404,7 @@ def kill(container, *args, **kwargs):
     err = "Unknown"
     client = _get_client()
     try:
-        dcontainer = _get_container_infos(container)['id']
+        dcontainer = _get_container_infos(container)['Id']
         if is_running(dcontainer):
             client.kill(dcontainer)
             if not is_running(dcontainer):
@@ -437,7 +438,7 @@ def remove_container(container=None, force=True, v=False, *args, **kwargs):
     dcontainer = None
     try:
         try:
-            dcontainer = _get_container_infos(container)['id']
+            dcontainer = _get_container_infos(container)['Id']
         except Exception:
             print "Container not existing."
             return True
@@ -477,7 +478,7 @@ def restart(container, timeout=10, *args, **kwargs):
     err = "Unknown"
     client = _get_client()
     try:
-        dcontainer = _get_container_infos(container)['id']
+        dcontainer = _get_container_infos(container)['Id']
         client.restart(dcontainer, timeout=timeout)
         if is_running(dcontainer):
             print "Container restarted."
@@ -506,7 +507,7 @@ def start(container, binds=None, ports=None, port_bindings=None,
     err = "Unknown"
     client = _get_client()
     try:
-        dcontainer = _get_container_infos(container)['id']
+        dcontainer = _get_container_infos(container)['Id']
         if not is_running(container):
             bindings = None
             if port_bindings is not None:
@@ -753,7 +754,7 @@ def installed(name,
         name=name)
 
     if container:
-        print "Container created, id: %s"%(container.get("id"))
+        print "Container created, id: %s"%(container.get("Id"))
     else:
         error("Couldn't create container.")
     return container
@@ -834,7 +835,7 @@ def running(containers,
                 lxc_conf=lxc_conf, publish_all_ports=publish_all_ports,
                 links=links)
             if is_running(container) and started:
-                print "Container started, id: %s"%started.get("id")
+                print "Container started, id: %s"%started.get("Id")
                 containers_out.append(started)
             else:
                 failure = True
@@ -877,11 +878,11 @@ def pull(repo, tag=None, username=None, password=None, email=None, *args, **kwar
         ret = client.pull(repo, tag=tag)
         if ret:
             logs, infos = _parse_image_multilogs_string(ret, repo)
-            if infos and infos.get('id', None):
+            if infos and infos.get('Id', None):
                 repotag = repo
                 if tag:
                     repotag = '{0}:{1}'.format(repo, tag)
-                print 'Repo {0} was pulled ({1})'.format(repotag, infos['id'])
+                print 'Repo {0} was pulled ({1})'.format(repotag, infos['Id'])
                 return infos
             else:
                 error = _pull_assemble_error_status(logs)
@@ -1122,7 +1123,7 @@ _deploy = {
     },
 }
 
-
+# deploy a container
 def deploy(config, appname, hostname, state):
     if "container" not in state:
         error("Container name missing")
@@ -1130,6 +1131,7 @@ def deploy(config, appname, hostname, state):
     elif "image" not in state:
         error("Image name missing")
         return {}
+    state["container"] = "%s-%s-%s"%(appname,hostname,state["container"])
     print "--> Preparing to run container(s) %s from image %s ..."%(state["container"],state["image"])
     out = {}
     for action in _deploy.get('split',[]):
@@ -1157,18 +1159,24 @@ def deploy(config, appname, hostname, state):
         print "--> Container successfully started %s."%name
         app[name] = container
     return app
+
+# generate app hosts
+def generate_hosts(config, app):
+    '''
+    app: {
+        "container id": continer details
+        ...
+    }
+    '''
+    hosts = {app[container]["NetworkSettings"]["IPAddress"]:app[container]["Name"].replace('/','') for container in app}
+    for container in app:
+        path = (app[container]["HostsPath"]
+                if boot2docker.running() is not True
+                else os.path.join(config["config_path"],"docker","containers",app[container]["Id"],"hosts"))
+        with open(path, 'r+') as f:
+            for host in hosts:
+                f.write("%s\t%s\n"%(host,hosts[host]))
 ##
 
-#app = {
-#    "container_name": {
-#        "container details"
-#        ...
-#    }
-#    ...
-#}
 
-#TODO
-def generate_hosts(app):
-    hosts = {app[container]["NetworkSettings"]["IPAddress"]:[app[container]["Name"].replace('/','')] for container in app}
-    for container in app:
-        path = app[container]["HostsPath"]
+# TODO: VM IP as client socket
