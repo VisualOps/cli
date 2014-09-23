@@ -1,12 +1,11 @@
 import logging
-import os.path
 import getpass
+from visualops.utils import utils
 from visualops.utils import rpc
 from cliff.command import Command
 
 class Login(Command):
     "Login in VisualOps. Once succeceed, the session will be persisted for the next 24 hours, or another login takes somewhere else."
-    #store session to ~/.visualops/session.ini
 
     log = logging.getLogger(__name__)
 
@@ -19,27 +18,15 @@ class Login(Command):
         if not passwd:
             raise RuntimeError('must input a password')
 
-        # login
+        # Login
         (err, result) = rpc.login(username, passwd)
 
         if err:
             raise RuntimeError('login failed:( ({0})'.format(err))
         else:
             self.app.stdout.write('login succeed!\n')
-            home_folder = os.path.expanduser('~')
-            #ensure ~/.visualops exist
-            if os.path.isdir(home_folder + '/.visualops'):
-                pass
-            else:
-                os.mkdir(home_folder + '/.visualops')
-            #store session info to ~/.visualops/session.ini
-            ini_file = home_folder + '/.visualops/session.ini'
-            with open( ini_file, 'w+') as file:
-                file.write("[config]\n")
-                k, v = result.keys(), result.values()
-                for i in range(len(k)):
-                    file.write( k[i] + " = " + unicode(str(v[i])) + "\n" )
-            self.app.stdout.write( 'wrote to {0} succeed!\n'.format(ini_file) )
+            # Save session
+            utils.save_session(result)
 
 
 class Logout(Command):

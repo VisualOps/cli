@@ -1,0 +1,26 @@
+
+# Error Code
+E_OK		= 0
+E_NONE		= 1
+E_INVALID	= 2
+E_FULL		= 3
+E_EXIST		= 4
+E_EXTERNAL	= 5			# external opertion failure
+E_FAILED	= 6
+E_BUSY		= 7
+E_NORSC		= 8
+E_NOPERM	= 9
+E_NOSTOP	= 10
+E_NOSTART	= 11
+E_ERROR		= 12
+E_LEFTOVER	= 13
+E_TIMEOUT   = 14
+E_UNKNOWN	= 15
+E_CONN		= 16
+E_EXPIRED	= 17
+E_PARAMS	= 18
+E_SESSION	= 19
+E_END		= 20
+E_BLOCKED_USER   = 21
+E_IDEM		= 22
+E_REMOVED_USER   = 23

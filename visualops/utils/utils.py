@@ -1,16 +1,51 @@
 import os
 import re
-import subprocess
 import sys
+import os.path
+import ConfigParser
 from datetime import date
 
 DEFAULT_YEAR  = date.today().year
 PROGRESS_RE = re.compile(r'\((\s?\d+)%\)')
 
+def save_session(result):
+    try:
+        home_folder = os.path.expanduser('~')
+
+        #Ensure ~/.visualops exist
+        if os.path.isdir(home_folder + '/.visualops'):
+            pass
+        else:
+            os.mkdir(home_folder + '/.visualops')
+
+        #Save session to ~/.visualops/session
+        ini_file = home_folder + '/.visualops/session'
+        with open( ini_file, 'w+') as file:
+            output = '[config]\n'
+            output += 'username = ' + result['username'] + '\n'
+            output += 'session_id = ' + result['session_id'] + '\n'
+            file.write( output )
+        print ''
+    except Exception:
+        return False
+
+
 def load_session():
-    with open(os.path.join(os.environ['HOME']), '.visualops/session') as f:
-        yaml = f.readlines()
-    return (yaml.username, yaml.session_id)
+    try:
+        home_folder = os.path.expanduser('~')
+        ini_file    = home_folder + '/.visualops/session'
+        if not os.path.isfile(ini_file):
+            print('please login first!')
+            return (None, None)
+        config      = ConfigParser.SafeConfigParser()
+        config.read(ini_file)
+        username   = config.get('config','username')
+        session_id = config.get('config','session_id')
+        return (username, session_id)
+    except:
+        print('load session failed, try login again!')
+        return (None, None)
+
 
 class Progress(object):
     def __init__(self, filename=None):

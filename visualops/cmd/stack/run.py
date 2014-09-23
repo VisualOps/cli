@@ -10,12 +10,16 @@ class Run(Command):
 
     def get_parser(self, prog_name):
         parser = super(Run, self).get_parser(prog_name)
+        parser.add_argument('-l', '--local', action='store_true', dest='run_stack_local', help='deploy the stack locally')
         parser.add_argument('region_name', nargs='?', default='')
         parser.add_argument('stack_id', nargs='?', default='')
         return parser
 
     def take_action(self, parsed_args):
         self.app.stdout.write('stack run TO-DO!\n')
+
+        print parsed_args.run_stack_local
+
 
         # username, session_id = load_session()
         # client   = rpc()

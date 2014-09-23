@@ -1,10 +1,7 @@
 import logging
-import os.path
-import ConfigParser
-
+from visualops.utils import utils
 from visualops.utils import rpc
 from cliff.lister import Lister
-
 
 class List(Lister):
     "List your apps, locally or on AWS"
@@ -17,14 +14,8 @@ class List(Lister):
         return parser
 
     def take_action(self, parsed_args):
+        (username, session_id) = utils.load_session()
 
-        home_folder = os.path.expanduser('~')
-        ini_file    = home_folder + '/.visualops/session.ini'
-        config      = ConfigParser.SafeConfigParser()
-        config.read(ini_file)
-        username   = config.get("config","username")
-        session_id = config.get("config","session_id")
- 
         # get app list
         (err, result) = rpc.app_list(username, session_id, parsed_args.region_name)
 
