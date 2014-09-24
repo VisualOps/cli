@@ -52,13 +52,12 @@ class Pull(Command):
             # pudb.set_trace()
             for (uid,comp) in stack_json['component'].items():
                 if unicode(comp['type']) == constant.RESTYPE['INSTANCE']:
-                    print "found instance %s" % comp['name']
+                    self.app.stdout.write('found instance {0}'.format(comp['name']))
                     if comp['state']:
-                        print "found state of instance %s" % comp['name']
+                        print ': has %s state(s)' % len(comp['state'])
                         print json.dumps( comp['state'],indent = 4)
                     else:
-                        print "not found state of instance %s" % comp['name']
-
+                        print ': has no state'
 
             with open(stack_file,'w+') as f:
                 f.writelines(json.dumps(stack_json,indent = 4))

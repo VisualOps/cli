@@ -1,4 +1,5 @@
 import logging
+import json
 from visualops.utils import rpc
 from visualops.utils import utils
 from visualops.utils import constant
@@ -36,17 +37,42 @@ class Info(ShowOne):
             if len(result) == 0:
                 return (),()
 
+            stack_json = result[0]
+
+            del stack_json['layout']
+            del stack_json['property']
+
+            instance_with_state    = 0
+            instance_without_state = 0
+            for (uid,comp) in stack_json['component'].items():
+                if unicode(comp['type']) == constant.RESTYPE['INSTANCE']:
+                    self.app.stdout.write('found instance {0}'.format(comp['name']))
+                    if comp['state']:
+                        print ': has %s state(s)' % len(comp['state'])
+                        instance_with_state+=1
+                    else:
+                        print ': has no state'
+                        instance_without_state+=1
+
             columns = ( 'Id',
                         'Name',
-                        'CloudType',
-                        'Provider',
+                        'Region',
+                        'Version',
+                        'Module Tag',
                         'Component',
+                        'Instance Total',
+                        'Instance With State',
+                        'Instance Without State',
                        )
             data = (
-                    result[0]["id"],
-                    result[0]["name"],
-                    result[0]["cloud_type"],
-                    result[0]["provider"],
-                    len(result[0]["component"]),
+                    result[0]['id'],
+                    result[0]['name'],
+                    result[0]['region'],
+                    result[0]['version'],
+                    result[0]['agent']['module']['tag'],
+                    len(result[0]['component']),
+                    instance_with_state+instance_without_state,
+                    instance_with_state,
+                    instance_without_state,
                     )
             return (columns, data)
