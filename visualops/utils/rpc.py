@@ -1,34 +1,42 @@
 import requests
 import json
 
-ide = "https://ide.visualops.io"
+ide = "http://api.mc3.io"
 headers = {'content-type': 'application/json'}
 
 def _call(url, method, params):
     payload = {
         "method": method,
-        "params": params
+        "params": params,
         "jsonrpc": "2.0",
         "id": 0,
     }
-    return requests.post(
-        '%s/%s' % (ide, url), 
-        data	= json.dumps(payload), 
+    rlt = requests.post(
+        '%s/%s/' % (ide, url),
+        data    = json.dumps(payload),
         headers	= headers
-    ).json()
+    )
+    return rlt.json()["result"]
 
+### session operation ###
 def login(username, password):
 	params = [username, password]
 	return _call('session', 'login', params)
 
-def logout(username, session_id):
-	params = [username, session_id]
-	return _call('session', 'logout', params)
+### stack operation ###
+def stack_list(username, session_id, region_name):
+    params = [username, session_id, region_name]
+    return _call('stack', 'list', params)
 
-def pull(username, session_id, stack_id):
-	params = [username, session_id, None, [stack_id]]
-	return _call('stack', 'info', params)
+def stack_info(username, session_id, region_name, stack_ids):
+    params = [username, session_id, region_name, stack_ids]
+    return _call('stack', 'info', params)
 
-def push(username, session_id, stack_id):
-	params = [username, session_id, None, [stack_id]]
-	return _call('stack', 'save', params)
+### app operation ###
+def app_list(username, session_id, region_name):
+    params = [username, session_id, region_name]
+    return _call('app', 'list', params)
+
+def app_info(username, session_id, region_name, app_ids):
+    params = [username, session_id, region_name, app_ids]
+    return _call('app', 'info', params)

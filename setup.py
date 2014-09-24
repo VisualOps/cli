@@ -19,5 +19,29 @@ setup(
     include_package_data=True,
     zip_safe=False,
     scripts=['bin/visualops'],
-    install_requires=['docker-py'],
+    install_requires=['cliff','docker-py'],
+    entry_points={
+        'console_scripts': [
+            'visualops = visualops.main:main'
+        ],
+        'visualops.cli': [
+            'login      = visualops.cmd.session:Login',
+            'logout     = visualops.cmd.session:Logout',
+
+            'stack list   = visualops.cmd.stack.list:List',
+            'stack info   = visualops.cmd.stack.info:Info',
+            'stack pull   = visualops.cmd.stack.pull:Pull',
+            'stack push   = visualops.cmd.stack.push:Push',
+            'stack run    = visualops.cmd.stack.run:Run',
+            'stack delete = visualops.cmd.stack.delete:Delete',
+
+            'app list      = visualops.cmd.app.list:List',
+            'app info      = visualops.cmd.app.info:Info',
+            'app stop      = visualops.cmd.app.stop:Stop',
+            'app start     = visualops.cmd.app.start:Start',
+            'app reboot    = visualops.cmd.app.reboot:Reboot',
+            'app clone     = visualops.cmd.app.clone:Clone',
+            'app terminate = visualops.cmd.app.terminate:Terminate',
+        ],
+    },
 )
