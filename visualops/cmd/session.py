@@ -9,8 +9,16 @@ class Login(Command):
 
     log = logging.getLogger(__name__)
 
+    def get_parser(self, prog_name):
+        parser = super(Login, self).get_parser(prog_name)
+        parser.add_argument('-u', action='store', dest='username', nargs='?', default='', help='login username')
+        return parser
+
     def take_action(self, parsed_args):
-        username = raw_input('Enter usename or email:')
+
+        username = parsed_args.username
+        if not username:
+            username = raw_input('Enter usename or email:')
         if not username:
             raise RuntimeError('must input a username')
 
