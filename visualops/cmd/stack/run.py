@@ -18,18 +18,21 @@ class Run(Command):
 
     def take_action(self, parsed_args):
 
-        if parsed_args.run_stack_local:
-            print 'running %s to local ....' % parsed_args.stack_id
-        else:
-            print 'running %s to visualops.io (not support yet, please try -l)....' % parsed_args.stack_id
-            return
+        stack_id = parsed_args.stack_id
 
-        stack_file = os.path.join(os.getcwd(), '%s.yaml' % parsed_args.stack_id)
+        stack_file = os.path.join(os.getcwd(), '%s.yaml' % stack_id)
         if not os.path.isfile(stack_file):
             print( '%s is not exist, please pull stack first!' % stack_file )
             return
+
+        if parsed_args.run_stack_local:
+            print 'Deploying %s.yaml ......' % stack_id
+        else:
+            print 'Deploying %s.yaml to remote (not support yet, please try -l)....' % stack_id
+            return
+
         try:
-            print "Load data from %s" % stack_file
+            self.log.debug( ">Load data from %s" % stack_file )
             stream = open(stack_file, 'r')
             app = yaml.load(stream)
         except Exception:
@@ -38,7 +41,10 @@ class Run(Command):
         if not app:
             raise RuntimeError('stack json is invalid!')
 
-        print "=============================================================="
-        print json.dumps(app, indent=4)
-        print "=============================================================="
+        self.log.debug( '==============================================================' )
+        self.log.debug( json.dumps(app, indent=4) )
+        self.log.debug( '==============================================================' )
+
+
+        print 'TO-DO'
 

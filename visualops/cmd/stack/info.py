@@ -22,7 +22,8 @@ class Info(ShowOne):
             return (),()
 
         # get stack info
-        (err, result) = rpc.stack_info(username, session_id, None, [parsed_args.stack_id])
+        stack_id = parsed_args.stack_id
+        (err, result) = rpc.stack_info(username, session_id, None, [ stack_id ])
 
         if err:
             if err == constant.E_SESSION:
