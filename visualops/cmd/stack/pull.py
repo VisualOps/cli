@@ -46,9 +46,14 @@ class Pull(Command):
             del stack_json['property']
 
             #generate yaml
-            app = {}
+            app = {
+                'hosts' : {},
+                'hosts_table' : {},
+            }
             for (uid,comp) in stack_json['component'].items():
                 if unicode(comp['type']) == constant.RESTYPE['INSTANCE']:
+
+                    app['hosts_table'][uid] = comp['name']
 
                     log_str = '>Found instance {0}'.format(comp['name'])
                     
@@ -63,7 +68,7 @@ class Pull(Command):
                                 if not container.has_key(state_type):
                                     container[state_type] = {}
                                 container[state_type][container_name] = state['parameter']
-                        app[hostname] = container
+                        app['hosts'][hostname] = container
                     else:
                         log_str+=': has no state'
                     
