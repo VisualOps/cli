@@ -114,7 +114,7 @@ def gen_config(config, appid):
     }
     for key in conf:
         out = re.sub(r"%s = (.*)\n"%(key),"%s = %s\n"%(key,conf[key]),out)
-    with open(os.path.join(config['config_path']
+    with open(os.path.join(config['config_path'],
                            "docker",
                            "boot2docker",
                            "%s.cfg"%appid), 'w') as f:
