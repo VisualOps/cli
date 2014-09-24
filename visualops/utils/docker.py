@@ -34,7 +34,7 @@ def _get_config():
         config['Configs'] = {}
     return config
 
-def _get_client(version=None, timeout=None):
+def _get_client(url=None, version=None, timeout=None):
     '''
     Get a connection to a docker API (socket or URL)
 
@@ -49,7 +49,7 @@ def _get_client(version=None, timeout=None):
 
     Return: docker client
     '''
-    client = docker.Client()
+    client = docker.Client(base_url=url)
     # force 1..5 API for registry login
     if not version:
         if client._version == '1.4':
