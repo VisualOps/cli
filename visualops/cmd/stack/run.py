@@ -39,16 +39,22 @@ class Run(Command):
         #generate Global.app
         for (uid,comp) in stack_json['component'].items():
             if unicode(comp['type']) == Constant.RESTYPE['INSTANCE']:
-                self.app.stdout.write('found instance {0}\n'.format(comp['name']))
+                self.app.stdout.write('found instance {0}'.format(comp['name']))
                 if comp['state']:
+                    print ': has %s state(s)' % len(comp['state'])
                     hostname = comp['name']
                     container = {}
                     for (idx,state) in enumerate(comp['state']):
-                        if state['module'] == 'linux.docker.deploy':
+                        state_type = state['module']
+                        if state_type == 'linux.docker.deploy':
                             container_name = state['parameter']['container']
-                            container[container_name] = state['parameter']
+                            if not container.has_key(state_type):
+                                container[state_type] = {}
+                            container[state_type][container_name] = state['parameter']
                     Global.app[hostname] = container
+                else:
+                    print ': has no state'
         print "===================================="
+        #data is in Global.app
         print json.dumps(Global.app,indent=4)
-
 
