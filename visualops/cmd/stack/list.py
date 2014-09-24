@@ -1,7 +1,7 @@
 import logging
 from visualops.utils import rpc
 from visualops.utils import utils
-from visualops.utils import constant
+from visualops.utils import Constant
 from cliff.lister import Lister
 
 
@@ -24,7 +24,7 @@ class List(Lister):
         # get stack list
         (err, result) = rpc.stack_list(username, session_id, parsed_args.region_name)
         if err:
-            if err == constant.E_SESSION:
+            if err == Constant.E_SESSION:
                 raise RuntimeError('Your Session is invalid, please re-login!')
             else:
                 raise RuntimeError('get stack list failed:( ({0})'.format(err))

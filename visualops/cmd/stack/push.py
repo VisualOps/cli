@@ -13,7 +13,6 @@ class Push(Command):
 
     def get_parser(self, prog_name):
         parser = super(Push, self).get_parser(prog_name)
-        parser.add_argument('region_name', nargs='?', default='')
         parser.add_argument('stack_id', nargs='?', default='')
         return parser
 

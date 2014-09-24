@@ -1,8 +1,7 @@
 import logging
-import json
 from visualops.utils import rpc
 from visualops.utils import utils
-from visualops.utils import constant
+from visualops.utils import Constant
 from cliff.show import ShowOne
 
 
@@ -13,7 +12,6 @@ class Info(ShowOne):
 
     def get_parser(self, prog_name):
         parser = super(Info, self).get_parser(prog_name)
-        parser.add_argument('region_name', nargs='?', default='')
         parser.add_argument('stack_id', nargs='?', default='')
         return parser
 
@@ -24,10 +22,10 @@ class Info(ShowOne):
             return (),()
 
         # get stack info
-        (err, result) = rpc.stack_info(username, session_id, parsed_args.region_name, [parsed_args.stack_id])
+        (err, result) = rpc.stack_info(username, session_id, None, [parsed_args.stack_id])
 
         if err:
-            if err == constant.E_SESSION:
+            if err == Constant.E_SESSION:
                 raise RuntimeError('Your Session is invalid, please re-login!')
             else:
                 raise RuntimeError('get stack info failed:( ({0})'.format(err))
@@ -45,7 +43,7 @@ class Info(ShowOne):
             instance_with_state    = 0
             instance_without_state = 0
             for (uid,comp) in stack_json['component'].items():
-                if unicode(comp['type']) == constant.RESTYPE['INSTANCE']:
+                if unicode(comp['type']) == Constant.RESTYPE['INSTANCE']:
                     self.app.stdout.write('found instance {0}'.format(comp['name']))
                     if comp['state']:
                         print ': has %s state(s)' % len(comp['state'])
