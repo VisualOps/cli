@@ -42,11 +42,6 @@ setup(
             'app reboot    = visualops.cmd.app.reboot:Reboot',
             'app clone     = visualops.cmd.app.clone:Clone',
             'app terminate = visualops.cmd.app.terminate:Terminate',
-
-            'demo simple = visualops.demo.simple:Simple',
-            'demo list   = visualops.demo.list:Files',
-            'demo show   = visualops.demo.show:File',
-            'demo error  = visualops.demo.simple:Error',
         ],
     },
 )
