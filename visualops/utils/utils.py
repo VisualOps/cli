@@ -93,6 +93,18 @@ def require_login(f):
     return wrapper
 
 
+def error(*objs):
+    print("ERROR: ", *objs, file=sys.stderr)
+def warning(*objs):
+    print("WARNING: ", *objs, file=sys.stderr)
+
+def user_param(config, text, default):
+    if not config.get("interactive"): return default
+    print "%s [%s]: "%(text,default)
+    res = raw_input().strip(' \t\n\r')
+    return (res if res else default)
+
+
 def dict2yaml(data):
     rlt = yaml.safe_dump(data)
     return rlt

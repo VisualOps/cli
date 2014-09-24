@@ -32,7 +32,7 @@ def ip(config, appid):
                                                                             "%s.cfg"%appid)},
                                     stdout=PIPE,stderr=PIPE).communicate()
     except Exception:
-        return ""
+        return "127.0.0.1"
     return out
 
 # Run boot2docker VM
@@ -122,18 +122,27 @@ def gen_config(config, appid):
     return True
 
 # Mount volume to boot2docker VM
-def mount(volumes):
+def mount(name,volumes):
     '''
     volumes: [{
         "volume": "root",
-        "mountpoint": "/"
+        "hostpath": "/"
     },
     ...
     ]
     '''
-    stop()
-    # TODO mount here
-    return run()
+    for vol in volumes:
+        try:
+            out, err = subprocess.Popen(["VBoxManage","sharedfolder","add",name,"--name",vol["volume"],"--hostpath",vol["hostpath"]],
+                                        stdout=PIPE,stderr=PIPE).communicate()
+        except Exception as e:
+            error(e)
+            return False
+        if err:
+            error(err)
+            return False
+    return True
+
 
 # Test if has boot2docker
 def has():
@@ -145,17 +154,31 @@ def has():
 
 
 
-# TODO
-# Run app
-def run(config, appid):
-    if not gen_config(config, appid):
-        error("Unable to generate boot2docker configuration")
-        return False
 
-    mount([{
-        "volume": "root",
-        "mountpoint": "/",
-    },{
-        "volume": "containers",
-        "mountpoint": os.path.join(config["config_path"],"docker","containers"),
-    }])
+# TODO move
+# Run app
+def run(config, app_dict):
+    appname = user_param(config, "Enter app name",app_dict.get("name","default-app"))
+    if boot2docker.has():
+        if not gen_config(config, appid):
+            error("Unable to generate boot2docker configuration")
+            return False
+        boot2docker.delete(config, appid)
+        boot2docker.mount(appname[{
+            "volume": "root",
+            "hostpath": "/",
+        },{
+            "volume": "containers",
+            "hostpath": os.path.join(config["config_path"],"docker","containers"),
+        }])
+        boot2docker.start(config, appid)
+        config["chroot"] = os.path.join("/mnt/host",config.get("chroot"))
+        config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appid))
+    app = {}
+    config["hosts_table"] = app_dict.get("hosts_table")
+    for hostname in app_dict.get("hosts",{}):
+        for state in app_dict[hostname]:
+            if state == "linux.docker.deploy":
+                for container in app_dict[hostname][state]:
+                    app.update(docker.deploy(config, appname, hostname, app_dict[hostname][state][container]))
+    docker.generate_hosts(config, app)

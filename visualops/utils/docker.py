@@ -34,7 +34,7 @@ def _get_config():
         config['Configs'] = {}
     return config
 
-def _get_client(url=None, version=None, timeout=None):
+def _get_client(config, url=None, version=None, timeout=None):
     '''
     Get a connection to a docker API (socket or URL)
 
@@ -49,6 +49,8 @@ def _get_client(url=None, version=None, timeout=None):
 
     Return: docker client
     '''
+    if config.get("docker_sock"):
+        url=config["docker_sock"]
     client = docker.Client(base_url=url)
     # force 1..5 API for registry login
     if not version:
@@ -79,7 +81,7 @@ def _set_id(infos):
         infos.pop("ID")
     return infos
 
-def _get_image_infos(image):
+def _get_image_infos(config,image):
     '''
     Verify that the image exists
     We will try to resolve either by:
@@ -92,7 +94,7 @@ def _get_image_infos(image):
 
     Returns dict
     '''
-    client = _get_client()
+    client = _get_client(config)
     infos = None
     try:
         infos = _set_id(client.inspect_image(image))
@@ -100,7 +102,7 @@ def _get_image_infos(image):
         pass
     return infos
 
-def _get_container_infos(container):
+def _get_container_infos(config, container):
     '''
     Get container infos
 
@@ -109,7 +111,7 @@ def _get_container_infos(container):
 
     return: dict
     '''
-    client = _get_client()
+    client = _get_client(config)
     infos = None
     try:
         infos = _set_id(client.inspect_container(container))
@@ -117,7 +119,7 @@ def _get_container_infos(container):
         pass
     return infos
 
-def is_running(container, *args, **kwargs):
+def is_running(config, container, *args, **kwargs):
     '''
     Is this container running
 
@@ -127,7 +129,7 @@ def is_running(container, *args, **kwargs):
     Return container
     '''
     try:
-        infos = _get_container_infos(container)
+        infos = _get_container_infos(config, container)
         return (infos if infos.get('State', {}).get('Running') else None)
     except Exception:
         return None
@@ -141,7 +143,7 @@ def _sizeof_fmt(num):
             return '%3.1f %s' % (num, x)
         num /= 1024.0
 
-def _parse_image_multilogs_string(ret, repo):
+def _parse_image_multilogs_string(config, ret, repo):
     '''
     Parse image log strings into grokable data
     '''
@@ -167,7 +169,7 @@ def _parse_image_multilogs_string(ret, repo):
         for l in image_logs:
             if isinstance(l, dict):
                 if l.get('status') == 'Download complete' and l.get('Id'):
-                    infos = _get_image_infos(repo)
+                    infos = _get_image_infos(config, repo)
                     break
     return image_logs, infos
 
@@ -256,7 +258,8 @@ def _gen_ports(ports,port_bindings,length):
 
 
 ## Docker action calls
-def create_container(image,
+def create_container(config,
+                     image,
                      command=None,
                      hostname=None,
                      user=None,
@@ -316,9 +319,9 @@ def create_container(image,
     '''
 
     err = "Unknown"
-    client = _get_client()
+    client = _get_client(config)
     try:
-        img_infos = _get_image_infos(image)
+        img_infos = _get_image_infos(config, image)
         mountpoints = {}
         binds = {}
         # create empty mountpoints for them to be
@@ -359,7 +362,7 @@ def create_container(image,
     return None
 
 
-def stop(container, timeout=10, *args, **kwargs):
+def stop(config, container, timeout=10, *args, **kwargs):
     '''
     Stop a running container
 
@@ -374,12 +377,12 @@ def stop(container, timeout=10, *args, **kwargs):
     :returns: boolean
     '''
     err = "Unknown"
-    client = _get_client()
+    client = _get_client(config)
     try:
-        dcontainer = _get_container_infos(container)['Id']
-        if is_running(dcontainer):
+        dcontainer = _get_container_infos(config, container)['Id']
+        if is_running(config, dcontainer):
             client.stop(dcontainer, timeout=timeout)
-            if not is_running(dcontainer):
+            if not is_running(config, dcontainer):
                 print "Container stopped."
                 return True
         else:
@@ -391,7 +394,7 @@ def stop(container, timeout=10, *args, **kwargs):
     return False
 
 
-def kill(container, *args, **kwargs):
+def kill(config, container, *args, **kwargs):
     '''
     Kill a running container
 
@@ -402,12 +405,12 @@ def kill(container, *args, **kwargs):
     :returns: boolean
     '''
     err = "Unknown"
-    client = _get_client()
+    client = _get_client(config)
     try:
-        dcontainer = _get_container_infos(container)['Id']
-        if is_running(dcontainer):
+        dcontainer = _get_container_infos(config, container)['Id']
+        if is_running(config, dcontainer):
             client.kill(dcontainer)
-            if not is_running(dcontainer):
+            if not is_running(config, dcontainer):
                 print "Container killed."
                 return True
         else:
@@ -419,7 +422,7 @@ def kill(container, *args, **kwargs):
     return False
 
 
-def remove_container(container=None, force=True, v=False, *args, **kwargs):
+def remove_container(config, container=None, force=True, v=False, *args, **kwargs):
     '''
     Removes a container from a docker installation
 
@@ -434,24 +437,24 @@ def remove_container(container=None, force=True, v=False, *args, **kwargs):
     Return boolean
     '''
     err = "Unknown"
-    client = _get_client()
+    client = _get_client(config)
     dcontainer = None
     try:
         try:
-            dcontainer = _get_container_infos(container)['Id']
+            dcontainer = _get_container_infos(config, container)['Id']
         except Exception:
             print "Container not existing."
             return True
         else:
-            if is_running(dcontainer):
+            if is_running(config, dcontainer):
                 if not force:
                     print "ERROR: Container running, won't remove it."
                     return False
                 else:
-                    kill(dcontainer)
+                    kill(config, dcontainer)
             client.remove_container(dcontainer, v=v)
             try:
-                _get_container_infos(dcontainer)
+                _get_container_infos(config, dcontainer)
             except Exception:
                 print "Container has been successfully removed."
                 return True
@@ -461,7 +464,7 @@ def remove_container(container=None, force=True, v=False, *args, **kwargs):
     return False
 
 
-def restart(container, timeout=10, *args, **kwargs):
+def restart(config, container, timeout=10, *args, **kwargs):
     '''
     Restart a running container
 
@@ -476,11 +479,11 @@ def restart(container, timeout=10, *args, **kwargs):
     :returns: boolean
     '''
     err = "Unknown"
-    client = _get_client()
+    client = _get_client(config)
     try:
-        dcontainer = _get_container_infos(container)['Id']
+        dcontainer = _get_container_infos(config, container)['Id']
         client.restart(dcontainer, timeout=timeout)
-        if is_running(dcontainer):
+        if is_running(config, dcontainer):
             print "Container restarted."
             return True
     except Exception as e:
@@ -489,7 +492,7 @@ def restart(container, timeout=10, *args, **kwargs):
     return False
 
 
-def start(container, binds=None, ports=None, port_bindings=None,
+def start(config, container, binds=None, ports=None, port_bindings=None,
           lxc_conf=None, publish_all_ports=None, links=None,
           privileged=False,
           *args, **kwargs):
@@ -505,10 +508,10 @@ def start(container, binds=None, ports=None, port_bindings=None,
     if not ports:
         ports = {}
     err = "Unknown"
-    client = _get_client()
+    client = _get_client(config)
     try:
-        dcontainer = _get_container_infos(container)['Id']
-        if not is_running(container):
+        dcontainer = _get_container_infos(config, container)['Id']
+        if not is_running(config, container):
             bindings = None
             if port_bindings is not None:
                 print "Binding container ports ..."
@@ -519,9 +522,9 @@ def start(container, binds=None, ports=None, port_bindings=None,
                          lxc_conf=lxc_conf,
                          publish_all_ports=publish_all_ports, links=links,
                          privileged=privileged)
-            if is_running(dcontainer):
+            if is_running(config, dcontainer):
                 print "Container has been started."
-                return _get_container_infos(container)
+                return _get_container_infos(config, container)
         else:
             print "Container is already started."
             return _get_container_infos(container)
@@ -531,7 +534,7 @@ def start(container, binds=None, ports=None, port_bindings=None,
     return None
 
 
-def get_images(name=None, quiet=False, all=True, *args, **kwargs):
+def get_images(config, name=None, quiet=False, all=True, *args, **kwargs):
     '''
     List docker images
 
@@ -548,7 +551,7 @@ def get_images(name=None, quiet=False, all=True, *args, **kwargs):
     :returns: the images
     '''
     err = "Unknown"
-    client = _get_client()
+    client = _get_client(config)
     try:
         infos = client.images(name=name, quiet=quiet, all=all)
         for i in range(len(infos)):
@@ -577,7 +580,8 @@ def get_images(name=None, quiet=False, all=True, *args, **kwargs):
     return None
 
 
-def get_containers(all=True,
+def get_containers(config,
+                   all=True,
                    trunc=False,
                    since=None,
                    before=None,
@@ -596,7 +600,7 @@ def get_containers(all=True,
     Returns a mapping of containers
     '''
     err = "Unknown"
-    client = _get_client()
+    client = _get_client(config)
     try:
         ret = client.containers(all=all,
                                 trunc=trunc,
@@ -610,12 +614,12 @@ def get_containers(all=True,
     return None
 
 
-def login(username=None, password=None, email=None, url=None, client=None, *args, **kwargs):
+def login(config, username=None, password=None, email=None, url=None, client=None, *args, **kwargs):
     '''
     Wrapper to the docker.py login method
     '''
     try:
-        c = (_get_client() if not client else client)
+        c = (_get_client(config) if not client else client)
         lg = c.login(username, password, email, url)
         print "%s logged to %s"%(username,(url if url else "default hub"))
     except Exception as e:
@@ -626,7 +630,8 @@ def login(username=None, password=None, email=None, url=None, client=None, *args
 
 
 ## Docker App actions
-def installed(name,
+def installed(config,
+              name,
               image,
               entrypoint=None,
               command=None,
@@ -694,13 +699,13 @@ def installed(name,
         This command does not verify that the named container
         is running the specified image.
     '''
-    iinfos = _get_image_infos(image)
+    iinfos = _get_image_infos(config, image)
     if not iinfos:
         error("Image not found.")
         return None
-    cinfos = _get_container_infos(name)
+    cinfos = _get_container_infos(config, name)
     if cinfos:
-        remove_container(container=name,force=True)
+        remove_container(config, container=name,force=True)
         print "Old container removed."
 
     dports, dvolumes, denvironment, de = {}, [], {}, {}
@@ -737,6 +742,7 @@ def installed(name,
                     vals.append('{0}:{1}'.format(k, p[k]))
             dvolumes.extend(vals)
     container = create_container(
+        config,
         image=image,
         command=command,
         entrypoint=entrypoint,
@@ -760,8 +766,10 @@ def installed(name,
     return container
 
 
-def running(containers,
+def running(config,
+            containers,
             image,
+            tag=None,
             entrypoint=None,
             command=None,
             environment=None,
@@ -823,18 +831,21 @@ def running(containers,
     containers_out = []
     failure = False
 
+    if tag:
+        image = "%s:%s"%(image,tag)
+
     for container in containers:
         port = (ports.pop() if ports else None)
         port_binding = (port_bindings.pop() if port_bindings else None)
-        ret = installed(
+        ret = installed(config,
             container,image,entrypoint=entrypoint,command=command,environment=environment,
             ports=port,volumes=volumes,mem_limit=mem_limit,cpu_shares=cpu_shares,force=force)
         if ret:
-            started = start(
+            started = start(config,
                 container, binds=binds, port_bindings=port_binding,
                 lxc_conf=lxc_conf, publish_all_ports=publish_all_ports,
                 links=links)
-            if is_running(container) and started:
+            if is_running(config, container) and started:
                 print "Container started, id: %s"%started.get("Id")
                 containers_out.append(started)
             else:
@@ -847,7 +858,7 @@ def running(containers,
     return containers_out, failure
 
 
-def pull(repo, tag=None, username=None, password=None, email=None, *args, **kwargs):
+def pull(config, repo, tag=None, username=None, password=None, email=None, *args, **kwargs):
     '''
     Pulls an repo from any registry. See above documentation for
     how to configure authenticated access.
@@ -868,16 +879,16 @@ def pull(repo, tag=None, username=None, password=None, email=None, *args, **kwar
     :returns: the repo details
     '''
     err = "Unknown"
-    client = _get_client()
+    client = _get_client(config)
     try:
         if username:
             url = repo.split(":")
             url = (url[0] if len(url) > 1 else None)
-            if not login(username,password,email,url):
+            if not login(config,username,password,email,url):
                 raise Exception("Can't login")
         ret = client.pull(repo, tag=tag)
         if ret:
-            logs, infos = _parse_image_multilogs_string(ret, repo)
+            logs, infos = _parse_image_multilogs_string(config, ret, repo)
             if infos and infos.get('Id', None):
                 repotag = repo
                 if tag:
@@ -907,6 +918,7 @@ def _create_files(config, state_params, exec_params):
             os.makedirs(dir_path)
         host_path = os.path.join(dir_path,("%s"%key).replace('/','-'))
         content = f.get("value","")
+        # TODO render
         try:
             with open(host_path, 'w') as f:
                 f.write(content)
@@ -1098,6 +1110,7 @@ _deploy = {
             # installed
             'container'     : 'container',
             'image'         : 'image',
+            'tag'           : 'tag',
             'command'       : 'command',
             'environment'   : 'environment',
             'volumes'       : 'volumes',
@@ -1150,7 +1163,7 @@ def deploy(config, appname, hostname, state):
         if hasattr(eval(action), '__call__'):
             if action in _deploy.get("convert",{}):
                 params = _deploy["convert"][action](config, appname, hostname, params)
-            out[action] = eval(action)(*params, **params)
+            out[action] = eval(action)(config, *params, **params)
         else:
             error("Action not found: %s"%action)
     app = {}
@@ -1171,12 +1184,9 @@ def generate_hosts(config, app):
     hosts = {app[container]["NetworkSettings"]["IPAddress"]:app[container]["Name"].replace('/','') for container in app}
     for container in app:
         path = (app[container]["HostsPath"]
-                if boot2docker.running() is not True
+                if boot2docker.has() is not True
                 else os.path.join(config["config_path"],"docker","containers",app[container]["Id"],"hosts"))
         with open(path, 'r+') as f:
             for host in hosts:
                 f.write("%s\t%s\n"%(host,hosts[host]))
 ##
-
-
-# TODO: VM IP as client socket
