@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import re
 import sys
@@ -26,7 +27,7 @@ def save_session(result):
             output += 'username = ' + result['username'] + '\n'
             output += 'session_id = ' + result['session_id'] + '\n'
             file.write( output )
-        print ''
+
     except Exception:
         return False
 
@@ -87,7 +88,7 @@ def open_browser(url):
 def require_login(f):
     def wrapper(*args, **kwargs):
         if settings.session_id is None:
-            print 'Please login first'
+            print('Please login first')
             sys.exit(1)
         return f(*args, **kwargs)
     return wrapper
@@ -100,7 +101,7 @@ def warning(*objs):
 
 def user_param(config, text, default):
     if not config.get("interactive"): return default
-    print "%s [%s]: "%(text,default)
+    print( "%s [%s]: "%(text,default) )
     res = raw_input().strip(' \t\n\r')
     return (res if res else default)
 
