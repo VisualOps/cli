@@ -25,7 +25,10 @@ $ . .venv/bin/activate
 ###4.2 formatting extensions for cliff(support html,json,yaml)
 (.venv)$ pip install cliff-tablib
 
-###4.3 debugger (optional, only for develop)
+###4.3 YAML parser and emitter for Python
+(.venv)$ pip install pyyaml
+
+###4.4 debugger (optional, only for develop)
 (.venv)$ pip install pudb
 
 

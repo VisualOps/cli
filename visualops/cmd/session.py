@@ -24,9 +24,12 @@ class Login(Command):
         if err:
             raise RuntimeError('login failed:( ({0})'.format(err))
         else:
-            self.app.stdout.write('login succeed!\n')
+
+            print('\nSucceeded!')
             # Save session
+            self.log.debug('>Start save session...')
             utils.save_session(result)
+            self.log.debug('>Finish session succeed')
 
 
 class Logout(Command):

@@ -2,7 +2,7 @@ import logging
 import os
 from visualops.utils import rpc
 from visualops.utils import utils
-from visualops.utils import Constant
+from visualops.utils import constant
 
 from cliff.command import Command
 
@@ -24,12 +24,13 @@ class Pull(Command):
         if not(username and session_id):
             return (),()
 
-        print 'pulling %s from visualops.io ....' % parsed_args.stack_id
-        # get stack info
-        (err, result) = rpc.stack_info(username, session_id, None, [parsed_args.stack_id])
+        stack_id = parsed_args.stack_id        
+
+        print 'pulling %s from remote ....\n' % stack_id
+        (err, result) = rpc.stack_info(username, session_id, None, [stack_id])
 
         if err:
-            if err == Constant.E_SESSION:
+            if err == constant.E_SESSION:
                 raise RuntimeError('Your Session is invalid, please re-login!')
             else:
                 raise RuntimeError('pull stack failed:( ({0})'.format(err))
@@ -38,19 +39,26 @@ class Pull(Command):
                 self.app.stdout.write('The stack is not existed\n')
                 return (),()
 
-            self.app.stdout.write('pull stack succeed\n')
+            self.log.debug('> pull stack %s succeed\n' %  stack_id )
 
             stack_json = result[0]
             del stack_json['layout']
             del stack_json['property']
 
             #generate yaml
-            app = {}
+            app = {
+                'hosts' : {},
+                'hosts_table' : {},
+            }
             for (uid,comp) in stack_json['component'].items():
-                if unicode(comp['type']) == Constant.RESTYPE['INSTANCE']:
-                    self.app.stdout.write('found instance {0}'.format(comp['name']))
+                if unicode(comp['type']) == constant.RESTYPE['INSTANCE']:
+
+                    app['hosts_table'][uid] = comp['name']
+
+                    log_str = '>Found instance {0}'.format(comp['name'])
+                    
                     if comp['state']:
-                        print ': has %s state(s)' % len(comp['state'])
+                        log_str+=': has %s state(s)' % len(comp['state'])
                         hostname = comp['name']
                         container = {}
                         for (idx,state) in enumerate(comp['state']):
@@ -60,15 +68,21 @@ class Pull(Command):
                                 if not container.has_key(state_type):
                                     container[state_type] = {}
                                 container[state_type][container_name] = state['parameter']
-                        app[hostname] = container
+                        app['hosts'][hostname] = container
                     else:
-                        print ': has no state'
+                        log_str+=': has no state'
+                    
+                    self.log.debug(log_str)                    
 
             stack_yaml = utils.dict2yaml(app)
-            stack_file = os.path.join(os.getcwd(), '%s.yaml' % parsed_args.stack_id)
+            stack_file = os.path.join(os.getcwd(), '%s.yaml' % stack_id)
             with open(stack_file,'w+') as f:
                 f.writelines( stack_yaml )
-            print "=============================================================="
-            print stack_yaml
-            print "=============================================================="
-            print '%s is pulled to local %s' % (parsed_args.stack_id, stack_file)
+
+            self.log.debug( '\nDocker state info' )
+            self.log.debug( '==============================================================' )
+            self.log.debug( stack_yaml )
+            self.log.debug( '==============================================================' )
+            self.log.debug( '> %s is saved to %s\n' % (stack_id, stack_file) )
+
+            print 'Done!'

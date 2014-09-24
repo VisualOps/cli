@@ -1,7 +1,7 @@
 import logging
 from visualops.utils import rpc
 from visualops.utils import utils
-from visualops.utils import Constant
+from visualops.utils import constant
 from cliff.show import ShowOne
 
 
@@ -22,15 +22,16 @@ class Info(ShowOne):
             return (),()
 
         # get stack info
-        (err, result) = rpc.stack_info(username, session_id, None, [parsed_args.stack_id])
+        stack_id = parsed_args.stack_id
+        (err, result) = rpc.stack_info(username, session_id, None, [ stack_id ])
 
         if err:
-            if err == Constant.E_SESSION:
+            if err == constant.E_SESSION:
                 raise RuntimeError('Your Session is invalid, please re-login!')
             else:
                 raise RuntimeError('get stack info failed:( ({0})'.format(err))
         else:
-            self.app.stdout.write('get {0} stack(s) info\n'.format(len(result)))
+            self.log.debug('>Get {0} stack(s) info'.format(len(result)))
 
             if len(result) == 0:
                 return (),()
@@ -43,15 +44,20 @@ class Info(ShowOne):
             instance_with_state    = 0
             instance_without_state = 0
             for (uid,comp) in stack_json['component'].items():
-                if unicode(comp['type']) == Constant.RESTYPE['INSTANCE']:
-                    self.app.stdout.write('found instance {0}'.format(comp['name']))
+                if unicode(comp['type']) == constant.RESTYPE['INSTANCE']:
+
+                    log_str = '>Found instance {0}'.format(comp['name'])
+
                     if comp['state']:
-                        print ': has %s state(s)' % len(comp['state'])
+                        log_str+=': has %s state(s)' % len(comp['state'])
                         instance_with_state+=1
                     else:
-                        print ': has no state'
+                        log_str+=': has no state'
                         instance_without_state+=1
 
+                    self.log.debug(log_str)
+
+            print "Stacks Info:"
             columns = ( 'Id',
                         'Name',
                         'Region',
