@@ -1,8 +1,13 @@
 import requests
 import json
+import logging
 
 ide = "http://api.mc3.io"
 headers = {'content-type': 'application/json'}
+
+#disable log message for request
+requests_log = logging.getLogger("requests")
+requests_log.setLevel(logging.WARNING)
 
 def _call(url, method, params):
     payload = {

@@ -2,7 +2,6 @@ import logging
 import os
 import yaml
 import json
-from visualops.utils import Global
 from cliff.command import Command
 
 
@@ -33,7 +32,6 @@ class Run(Command):
             print "Load data from %s" % stack_file
             stream = open(stack_file, 'r')
             app = yaml.load(stream)
-            Global.app = app
         except Exception:
             raise RuntimeError('Load yaml error!')
 
@@ -41,7 +39,6 @@ class Run(Command):
             raise RuntimeError('stack json is invalid!')
 
         print "=============================================================="
-        #data is in Global.app
-        print json.dumps(Global.app, indent=4)
+        print json.dumps(app, indent=4)
         print "=============================================================="
 
