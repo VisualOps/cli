@@ -3,6 +3,7 @@ import re
 import sys
 import os.path
 import ConfigParser
+import yaml
 from datetime import date
 
 DEFAULT_YEAR  = date.today().year
@@ -90,3 +91,12 @@ def require_login(f):
             sys.exit(1)
         return f(*args, **kwargs)
     return wrapper
+
+
+def dict2yaml(data):
+    rlt = yaml.safe_dump(data)
+    return rlt
+
+def yaml2dict(data):
+    rlt = yaml.load(data)
+    return rlt

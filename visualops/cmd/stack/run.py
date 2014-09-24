@@ -1,8 +1,8 @@
 import logging
 import os
+import yaml
 import json
 from visualops.utils import Global
-from visualops.utils import Constant
 from cliff.command import Command
 
 
@@ -18,43 +18,30 @@ class Run(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.app.stdout.write('stack run TO-DO!\n')
 
         if parsed_args.run_stack_local:
             print 'running %s to local ....' % parsed_args.stack_id
         else:
-            print 'running %s to visualops.io (not support yet)....' % parsed_args.stack_id
+            print 'running %s to visualops.io (not support yet, please try -l)....' % parsed_args.stack_id
             return
 
+        stack_file = os.path.join(os.getcwd(), '%s.yaml' % parsed_args.stack_id)
+        if not os.path.isfile(stack_file):
+            print( '%s is not exist, please pull stack first!' % stack_file )
+            return
         try:
-            stack_file = os.path.join(os.getcwd(), '%s.json' % parsed_args.stack_id)
-            f = file(stack_file);
-            stack_json = json.load(f)
+            print "Load data from %s" % stack_file
+            stream = open(stack_file, 'r')
+            app = yaml.load(stream)
+            Global.app = app
         except Exception:
-            raise RuntimeError('Load json error!')
+            raise RuntimeError('Load yaml error!')
 
-        if not stack_json:
+        if not app:
             raise RuntimeError('stack json is invalid!')
-        
-        #generate Global.app
-        for (uid,comp) in stack_json['component'].items():
-            if unicode(comp['type']) == Constant.RESTYPE['INSTANCE']:
-                self.app.stdout.write('found instance {0}'.format(comp['name']))
-                if comp['state']:
-                    print ': has %s state(s)' % len(comp['state'])
-                    hostname = comp['name']
-                    container = {}
-                    for (idx,state) in enumerate(comp['state']):
-                        state_type = state['module']
-                        if state_type == 'linux.docker.deploy':
-                            container_name = state['parameter']['container']
-                            if not container.has_key(state_type):
-                                container[state_type] = {}
-                            container[state_type][container_name] = state['parameter']
-                    Global.app[hostname] = container
-                else:
-                    print ': has no state'
-        print "===================================="
+
+        print "=============================================================="
         #data is in Global.app
-        print json.dumps(Global.app,indent=4)
+        print json.dumps(Global.app, indent=4)
+        print "=============================================================="
 

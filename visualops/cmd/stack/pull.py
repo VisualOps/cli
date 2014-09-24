@@ -3,7 +3,6 @@ import os
 from visualops.utils import rpc
 from visualops.utils import utils
 from visualops.utils import Constant
-import json
 
 from cliff.command import Command
 
@@ -45,17 +44,31 @@ class Pull(Command):
             del stack_json['layout']
             del stack_json['property']
 
-            self.app.stdout.write('found {0} component(s)\n'.format(len(stack_json['component'])))
+            #generate yaml
+            app = {}
             for (uid,comp) in stack_json['component'].items():
                 if unicode(comp['type']) == Constant.RESTYPE['INSTANCE']:
                     self.app.stdout.write('found instance {0}'.format(comp['name']))
                     if comp['state']:
                         print ': has %s state(s)' % len(comp['state'])
-                        #print json.dumps( comp['state'],indent = 4)
+                        hostname = comp['name']
+                        container = {}
+                        for (idx,state) in enumerate(comp['state']):
+                            state_type = state['module']
+                            if state_type == 'linux.docker.deploy':
+                                container_name = state['parameter']['container']
+                                if not container.has_key(state_type):
+                                    container[state_type] = {}
+                                container[state_type][container_name] = state['parameter']
+                        app[hostname] = container
                     else:
                         print ': has no state'
 
-            stack_file = os.path.join(os.getcwd(), '%s.json' % parsed_args.stack_id)
+            stack_yaml = utils.dict2yaml(app)
+            stack_file = os.path.join(os.getcwd(), '%s.yaml' % parsed_args.stack_id)
             with open(stack_file,'w+') as f:
-                f.writelines(json.dumps(stack_json,indent = 4))
+                f.writelines( stack_yaml )
+            print "=============================================================="
+            print stack_yaml
+            print "=============================================================="
             print '%s is pulled to local %s' % (parsed_args.stack_id, stack_file)
