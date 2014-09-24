@@ -5,7 +5,8 @@ CLI for VisualOps
 
 
 [third-lib]
-===
+=====================================================
+
 ##1.install virtualenv (virtual python environment)
 $ pip install virtualenv
 
@@ -24,29 +25,21 @@ $ . .venv/bin/activate
 ###4.2 formatting extensions for cliff(support html,json,yaml)
 (.venv)$ pip install cliff-tablib
 
-###4.3 debugger
+###4.3 debugger (optional, only for develop)
 (.venv)$ pip install pudb
 
 
 
 [install]
-===
+=====================================================
+
 (.venv)$ python setup.py install
 
 
 
-[debug]
-===
-##add the following line to first breakpoint
-<pre>
-import pudb
-pudb.set_trace()
-</pre>
-
-
-
 [usage]
-===
+=====================================================
+
 ##1.enter virtual python environment
 $ . .venv/bin/activate
 
@@ -56,27 +49,37 @@ $ . .venv/bin/activate
 ##3.show help
 (.venv)$ visualops -h
 
-##4.none-interactive mode
+##4.none-interactive mode (already support)
 (.venv)$ visualops login
 
-(.venv)$ visualops stack list us-east-1
+(.venv)$ visualops stack list
 
-(.venv)$ visualops -v stack list us-east-1
+(.venv)$ visualops -v stack list
 
-(.venv)$ visualops stack info ap-southeast-1 stack-xxxxxxxx
+(.venv)$ visualops stack list --debug
 
-##5.demo
-(.venv)$ visualops demo error
+(.venv)$ visualops stack info stack-xxxxxxxx
 
-(.venv)$ visualops demo error --debug
+(.venv)$ visualops stack pull stack-xxxxxxxx
 
-(.venv)$ visualops demo list -f yaml # csv,table,html,json,yaml
+(.venv)$ visualops stack run stack-xxxxxxxx -l
 
-(.venv)$ visualops demo show -f shell
+
+
+[debug]
+=====================================================
+
+##add the following line to first breakpoint
+<pre>
+import pudb
+pudb.set_trace()
+</pre>
+
 
 
 [support auto-complete]
-===
+=====================================================
+
 ##1.generate `bash_complete script`
 (.venv)$ visualops complete
 
