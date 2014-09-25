@@ -28,6 +28,10 @@ def login(username, password):
 	params = [username, password]
 	return _call('session', 'login', params)
 
+def logout(username, session_id):
+    params = [username, session_id]
+    return _call('session', 'logout', params)
+
 ### stack operation ###
 def stack_list(username, session_id, region_name):
     params = [username, session_id, region_name]

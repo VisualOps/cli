@@ -2,6 +2,7 @@ import logging
 import getpass
 from visualops.utils import utils
 from visualops.utils import rpc
+from visualops.utils import constant
 from cliff.command import Command
 
 class Login(Command):
@@ -46,4 +47,20 @@ class Logout(Command):
     log = logging.getLogger(__name__)
 
     def take_action(self, parsed_args):
-        self.app.stdout.write('logout TO-DO!\n')
+
+        (username, session_id)   = utils.load_session()
+        if not(username and session_id):
+            print 'Invalid login, no need logout!'
+            return
+
+
+        # Logout
+        (err, result) = rpc.logout(username, session_id)
+
+        if err:
+            if err == constant.E_SESSION:
+                raise RuntimeError('Your Session is invalid, no need logout!')
+            else:
+                raise RuntimeError('logout failed:( ({0})'.format(err))
+        else:
+            print('\nSucceeded!')
