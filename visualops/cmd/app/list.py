@@ -19,7 +19,7 @@ class List(Lister):
         if parsed_args.list_app_local:
             print 'List local app....'
             rlt = db.get_app_list()
-            return (( 'Id', 'Name', 'Stack Id', 'Region', 'State', 'Position' ), rlt)
+            return (( 'Id', 'Name', 'Stack Id', 'Region', 'State', 'Create At', 'Change At' , 'Position' ), rlt)
 
         else:
             print 'List remote app....'
