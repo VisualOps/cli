@@ -6,6 +6,7 @@ import os.path
 import ConfigParser
 import yaml
 import urllib2
+import contextlib
 from datetime import date
 
 DEFAULT_YEAR  = date.today().year
@@ -124,7 +125,7 @@ def download(url, file_name=None, verbose=True):
     f = open(file_name, 'wb')
     meta = u.info()
     file_size = int(meta.getheaders("Content-Length")[0])
-    print "Downloading: %s Bytes: %s" % (file_name, file_size)
+    print("Downloading: %s Bytes:%s"%(file_name, file_size))
     file_size_dl = 0
     block_sz = 8*1024
     buf = ""
@@ -135,7 +136,30 @@ def download(url, file_name=None, verbose=True):
         file_size_dl += len(buf)
         f.write(buf)
         if verbose:
-            status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+            status = r"%10d  [%3.2f%%]"%(file_size_dl,file_size_dl*100./file_size)
             status = status + chr(8)*(len(status)+1)
-            print status,
+            print(status,end="")
     f.close()
+
+# mute call
+class DummyFile(object):
+    def write(self, x): pass
+
+@contextlib.contextmanager
+def nostdout():
+    save_stdout = sys.stdout
+    sys.stdout = DummyFile()
+    yield
+    sys.stdout = save_stdout
+
+# render table from app
+def render_table(app):
+    # TODO: with count + appname + hostname
+    r = {}
+    for hostname in app:
+        r.setdefault(hostname,[])
+        for state in app[hostname]:
+            if state == "linux.docker.deploy":
+                for container in app[hostname][state]:
+                    r[hostname].append(container)
+    return r

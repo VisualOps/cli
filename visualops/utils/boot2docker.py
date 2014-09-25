@@ -8,15 +8,16 @@ import subprocess
 from subprocess import PIPE
 import re
 import os
-from visualops.utils.utils import error,warning
+from visualops.utils import utils
 
 
 # Check if boot2docker VM is running
 def running(config, appid):
     try:
         out, err = subprocess.Popen(["boot2docker","status"],
-                                    env={"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],
-                                                                            "%s.cfg"%appid)},
+                                    env=os.environ.copy().update(
+                                        {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
+                                    ),
                                     stdout=PIPE,stderr=PIPE).communicate()
     except Exception:
         return False
@@ -26,8 +27,9 @@ def running(config, appid):
 def ip(config, appid):
     try:
         out, err = subprocess.Popen(["boot2docker","ip"],
-                                    env={"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],
-                                                                            "%s.cfg"%appid)},
+                                    env=os.environ.copy().update(
+                                        {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
+                                    ),
                                     stdout=PIPE,stderr=PIPE).communicate()
     except Exception:
         return "127.0.0.1"
@@ -38,11 +40,12 @@ def run(config, appid):
     if running(config, appid) is not True:
         try:
             out, err = subprocess.Popen(["boot2docker","start"],
-                                        env={"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],
-                                                                                "%s.cfg"%appid)},
+                                        env=os.environ.copy().update(
+                                            {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
+                                        ),
                                         stdout=PIPE,stderr=PIPE).communicate()
-            if err:
-                error(err)
+#            if err:
+#                utils.error(err)
         except Exception:
             pass
     return running(config, appid)
@@ -52,21 +55,25 @@ def stop(config, appid):
     if running(config, appid) is True:
         try:
             out, err = subprocess.Popen(["boot2docker","stop"],
-                                        env={"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],
-                                                                                "%s.cfg"%appid)},
+                                        env=os.environ.copy().update(
+                                            {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
+                                        ),
                                         stdout=PIPE,stderr=PIPE).communicate()
-            if err:
-                error(err)
+#            if err:
+#                utils.error(err)
         except Exception:
             pass
     return not running(config, appid)
 
 # Delete boot2docker VM
 def delete(config, appid):
+#    import pdb
+#    pdb.set_trace()
     try:
         out, err = subprocess.Popen(["boot2docker","destroy"],
-                                    env={"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],
-                                                                            "%s.cfg"%appid)},
+                                    env=os.environ.copy().update(
+                                        {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
+                                    ),
                                     stdout=PIPE,stderr=PIPE).communicate()
     except Exception:
         return False
@@ -74,21 +81,27 @@ def delete(config, appid):
 
 # Init boot2docker VM
 def init(config, appid):
+#    import pdb
+#    pdb.set_trace()
     delete(config,appid)
     try:
         out, err = subprocess.Popen(["boot2docker","init"],
-                                    env={"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],
-                                                                            "%s.cfg"%appid)},
+                                    env=os.environ.copy().update(
+                                        {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
+                                    ),
                                     stdout=PIPE,stderr=PIPE).communicate()
-    except Exception:
+    except Exception as e:
+        print e
         return False
     if err:
-        error(err)
+        utils.error(err)
         return False
     return True
 
 # Generates configuration file
-def gen_config(config, appid):
+def gen_config(config, appid, replace=True):
+    if os.path.isfile(os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)) and not replace:
+        return True
     try:
         out, err = subprocess.Popen(["boot2docker","config"],
                                     stdout=PIPE,stderr=PIPE).communicate()
@@ -97,11 +110,12 @@ def gen_config(config, appid):
     if not out:
         return False
     conf = {
-        "VM":appid,
-        "Dir":config["dirs"]["boot2docker"],
-        "ISO":os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso"),
-        "SerialFile":os.path.join(config["dirs"]["boot2docker"],"%s.sock"%appid),
+        "VM":"\"%s\""%appid,
+        "Dir":"\"%s\""%config["dirs"]["boot2docker"],
+        "ISO":"\"%s\""%os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso"),
+        "SerialFile":"\"%s\""%os.path.join(config["dirs"]["boot2docker"],"%s.sock"%appid),
     }
+    out = re.sub(r"boot2docker profile filename:(.*)\n","", out)
     for key in conf:
         out = re.sub(r"%s = (.*)\n"%(key),"%s = %s\n"%(key,conf[key]),out)
     with open(os.path.join(config["dirs"]["boot2docker"],
@@ -124,11 +138,11 @@ def mount(name,volumes):
             out, err = subprocess.Popen(["VBoxManage","sharedfolder","add",name,"--name",vol["volume"],"--hostpath",vol["hostpath"]],
                                         stdout=PIPE,stderr=PIPE).communicate()
         except Exception as e:
-            error(e)
+            utils.error(e)
             return False
-        if err:
-            error(err)
-            return False
+#        if err:
+#            utils.error(err)
+#            return False
     return True
 
 
