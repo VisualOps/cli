@@ -2,6 +2,7 @@ import logging
 import os
 import yaml
 import json
+import uuid
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,db
 
@@ -46,7 +47,11 @@ class Run(Command):
         self.log.debug( json.dumps(app, indent=4) )
         self.log.debug( '==============================================================' )
 
+        #generate app_id
+        app_id = 'app-%s' % str(uuid.uuid4())[:8]
+
         config = {
+            "app_id" : app_id,
             "interactive": True,
             "config_path": os.path.expanduser("~/.visualops"),
             "boot2docker_iso": "https://s3.amazonaws.com/visualops-cli/boot2docker.iso",
@@ -84,7 +89,7 @@ class Run(Command):
         self.run_app(config, app)
 
         #insert app to local db
-        db.create_app(app['name'], stack_id, app['region'])
+        db.create_app(app_id,app['name'], stack_id, app['region'])
 
 
     # Run app

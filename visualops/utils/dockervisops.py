@@ -16,6 +16,7 @@ import re
 import visualops
 from visualops.utils import boot2docker
 from visualops.utils import utils
+from visualops.utils import db
 
 ## Helpers
 def _get_config():
@@ -773,6 +774,8 @@ def installed(config,
 
     if container:
         print "Container created, id: %s"%(container.get("Id"))
+        #save container info to db
+        db.create_container( config["app_id"], container.get("Id"), name)
     else:
         utils.error("Couldn't create container.")
     return container
