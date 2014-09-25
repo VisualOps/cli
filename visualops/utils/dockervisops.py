@@ -10,9 +10,11 @@ note: Part of these functions have been extracted and/or modified
 import json
 import os
 import docker
+import datetime
 
-import boot2docker
-from utils import error,warning,user_param
+import visualops
+from visualops.utils import boot2docker
+from visualops.utils.utils import error,warning,user_param
 
 ## Helpers
 def _get_config():
@@ -71,12 +73,12 @@ def _set_id(infos):
     return: dict
     '''
     if infos:
-        id = None
-        if infos.get("Id"): id = infos["Id"]
-        elif infos.get("ID"): id = infos["ID"]
-        elif infos.get("id"): id = infos["id"]
+        cid = None
+        if infos.get("Id"): cid = infos["Id"]
+        elif infos.get("ID"): cid = infos["ID"]
+        elif infos.get("id"): cid = infos["id"]
         if "Id" not in infos:
-            infos["Id"] = id
+            infos["Id"] = cid
         infos.pop("id")
         infos.pop("ID")
     return infos
@@ -203,8 +205,8 @@ def _pull_assemble_error_status(logs):
                             err_log['errorDetail']['message'],
                         )
                     comment += msg
-    except Exception:
-        comment += traceback.format_exc()
+    except Exception as e:
+        comment += "%s"%e
     return comment
 
 def _get_port(port):
@@ -225,7 +227,7 @@ def _gen_ports(ports,port_bindings,length):
     out_ports = []
     out_port_bindings = []
 
-    if test_ports(port_bindings,length) is False:
+    if _test_ports(port_bindings,length) is False:
         return (None,None)
 
     i = 0
@@ -527,7 +529,7 @@ def start(config, container, binds=None, ports=None, port_bindings=None,
                 return _get_container_infos(config, container)
         else:
             print "Container is already started."
-            return _get_container_infos(container)
+            return _get_container_infos(config, container)
     except Exception as e:
         err = e
     error("Unable to start your container: %s"%err)
@@ -843,8 +845,7 @@ def running(config,
         if ret:
             started = start(config,
                 container, binds=binds, port_bindings=port_binding,
-                lxc_conf=lxc_conf, publish_all_ports=publish_all_ports,
-                links=links)
+                publish_all_ports=publish_all_ports, links=links)
             if is_running(config, container) and started:
                 print "Container started, id: %s"%started.get("Id")
                 containers_out.append(started)
@@ -916,7 +917,7 @@ def _create_files(config, state_params, exec_params):
         dir_path = os.path.join(config["config_path"],"docker","files",state_params["container"])
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
-        host_path = os.path.join(dir_path,("%s"%key).replace('/','-'))
+        host_path = os.path.join(dir_path,("%s"%path).replace('/','-'))
         content = f.get("value","")
         # TODO render
         try:

@@ -3,6 +3,7 @@ import os
 import yaml
 import json
 from cliff.command import Command
+from visualops.utils import dockervisops,boot2docker,utils
 
 
 class Run(Command):
@@ -22,7 +23,7 @@ class Run(Command):
 
         stack_file = os.path.join(os.getcwd(), '%s.yaml' % stack_id)
         if not os.path.isfile(stack_file):
-            print( '%s is not exist, please pull stack first!' % stack_file )
+            print( '%s does not exist, please pull stack first!' % stack_file )
             return
 
         if parsed_args.run_stack_local:
@@ -45,6 +46,66 @@ class Run(Command):
         self.log.debug( json.dumps(app, indent=4) )
         self.log.debug( '==============================================================' )
 
+        config = {
+            "interactive": True,
+            "config_path": os.path.expanduser("~/.visualops"),
+#            "volumes": {
+#                "hostname": {
+#                    "container": {
+#                        "/foo": "/bar",
+#                    },
+#                },
+#            },
+#            "cpu_shares": {
+#                "hostname": {
+#                    "container": "1",
+#                },
+#            },
+#            "mem_limit": {
+#                "hostname": {
+#                    "container": "512m",
+#                },
+#            },
+#            "chroot": "/path",
+#            "port_bindings": {
+#                "hostnameA": {
+#                    "containerA": {
+#                        "0.0.0.0:80": "80/tcp",
+#                        "6666": "6666/udp",
+#                        "127.0.0.1:7777": "7777",
+#                        "9999": "9999/tcp",
+#                        "23": "23",
+#                    },
+#                },
+#            },
+        }
 
-        print 'TO-DO'
+        self.run_app(config, app)
 
+
+    # Run app
+    def run_app(self, config, app_dict):
+        appname = utils.user_param(config, "Enter app name",app_dict.get("name","default-app"))
+        if boot2docker.has():
+            if not boot2docker.gen_config(config, appname):
+                utils.error("Unable to generate boot2docker configuration")
+                return False
+            boot2docker.delete(config, appname)
+            boot2docker.mount(appname, [{
+                "volume": "root",
+                "hostpath": "/",
+            },{
+                "volume": "containers",
+                "hostpath": os.path.join(config["config_path"],"docker","containers"),
+            }])
+            boot2docker.run(config, appname)
+            config["chroot"] = os.path.join("/mnt/host",config.get("chroot"))
+            config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appname))
+        app = {}
+        config["hosts_table"] = app_dict.get("hosts_table",{})
+        for hostname in app_dict.get("hosts",{}):
+            for state in app_dict["hosts"][hostname]:
+                if state == "linux.docker.deploy":
+                    for container in app_dict["hosts"][hostname][state]:
+                        app.update(dockervisops.deploy(config, appname, hostname, app_dict["hosts"][hostname][state][container]))
+        dockervisops.generate_hosts(config, app)

@@ -5,9 +5,11 @@ Boot2docker module (boot2docker wrapper)
 '''
 
 import subprocess
+from subprocess import PIPE
 import re
 import os
-from utils import error,warning
+from visualops.utils.utils import error,warning
+
 
 # Check if boot2docker VM is running
 def running(config, appid):
@@ -37,7 +39,7 @@ def ip(config, appid):
 
 # Run boot2docker VM
 def run(config, appid):
-    if running() is not True:
+    if running(config, appid) is not True:
         try:
             out, err = subprocess.Popen(["boot2docker","start"],
                                         env={"BOOT2DOCKER_PROFILE":os.path.join(config["config_path"],
@@ -49,11 +51,11 @@ def run(config, appid):
                 error(err)
         except Exception:
             pass
-    return running()
+    return running(config, appid)
 
 # Stop boot2docker VM
 def stop(config, appid):
-    if running() is True:
+    if running(config, appid) is True:
         try:
             out, err = subprocess.Popen(["boot2docker","stop"],
                                         env={"BOOT2DOCKER_PROFILE":os.path.join(config["config_path"],
@@ -65,7 +67,7 @@ def stop(config, appid):
                 error(err)
         except Exception:
             pass
-    return not running()
+    return not running(config, appid)
 
 # Delete boot2docker VM
 def delete(config, appid):
@@ -151,34 +153,3 @@ def has():
     except Exception:
         return False
     return True
-
-
-
-
-# TODO move
-# Run app
-def run(config, app_dict):
-    appname = user_param(config, "Enter app name",app_dict.get("name","default-app"))
-    if boot2docker.has():
-        if not gen_config(config, appid):
-            error("Unable to generate boot2docker configuration")
-            return False
-        boot2docker.delete(config, appid)
-        boot2docker.mount(appname[{
-            "volume": "root",
-            "hostpath": "/",
-        },{
-            "volume": "containers",
-            "hostpath": os.path.join(config["config_path"],"docker","containers"),
-        }])
-        boot2docker.start(config, appid)
-        config["chroot"] = os.path.join("/mnt/host",config.get("chroot"))
-        config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appid))
-    app = {}
-    config["hosts_table"] = app_dict.get("hosts_table")
-    for hostname in app_dict.get("hosts",{}):
-        for state in app_dict[hostname]:
-            if state == "linux.docker.deploy":
-                for container in app_dict[hostname][state]:
-                    app.update(docker.deploy(config, appname, hostname, app_dict[hostname][state][container]))
-    docker.generate_hosts(config, app)

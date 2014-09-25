@@ -24,7 +24,7 @@ class Pull(Command):
         if not(username and session_id):
             return (),()
 
-        stack_id = parsed_args.stack_id        
+        stack_id = parsed_args.stack_id
 
         print 'pulling %s from remote ....\n' % stack_id
         (err, result) = rpc.stack_info(username, session_id, None, [stack_id])
@@ -36,7 +36,7 @@ class Pull(Command):
                 raise RuntimeError('pull stack failed:( ({0})'.format(err))
         else:
             if len(result) == 0:
-                self.app.stdout.write('The stack is not existed\n')
+                self.app.stdout.write('The stack does not exist\n')
                 return (),()
 
             self.log.debug('> pull stack %s succeed\n' %  stack_id )
@@ -57,7 +57,7 @@ class Pull(Command):
                     app['hosts_table'][uid] = comp['name']
 
                     log_str = '>Found instance {0}'.format(comp['name'])
-                    
+
                     if comp['state']:
                         log_str+=': has %s state(s)' % len(comp['state'])
                         hostname = comp['name']
@@ -72,8 +72,8 @@ class Pull(Command):
                         app['hosts'][hostname] = container
                     else:
                         log_str+=': has no state'
-                    
-                    self.log.debug(log_str)                    
+
+                    self.log.debug(log_str)
 
             stack_yaml = utils.dict2yaml(app)
             stack_file = os.path.join(os.getcwd(), '%s.yaml' % stack_id)
@@ -84,6 +84,6 @@ class Pull(Command):
             self.log.debug( '==============================================================' )
             self.log.debug( stack_yaml )
             self.log.debug( '==============================================================' )
-            self.log.debug( '> %s is saved to %s\n' % (stack_id, stack_file) )
+            self.app.stdout.write( '> %s is saved to %s\n' % (stack_id, stack_file) )
 
             print 'Done!'

@@ -85,13 +85,13 @@ def open_browser(url):
 
     webbrowser.open_new_tab(url)
 
-def require_login(f):
-    def wrapper(*args, **kwargs):
-        if settings.session_id is None:
-            print('Please login first')
-            sys.exit(1)
-        return f(*args, **kwargs)
-    return wrapper
+#def require_login(f):
+#    def wrapper(*args, **kwargs):
+#        if settings.session_id is None:
+#            print('Please login first')
+#            sys.exit(1)
+#        return f(*args, **kwargs)
+#    return wrapper
 
 
 def error(*objs):
