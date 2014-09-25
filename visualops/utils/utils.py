@@ -5,6 +5,7 @@ import sys
 import os.path
 import ConfigParser
 import yaml
+import urllib2
 from datetime import date
 
 DEFAULT_YEAR  = date.today().year
@@ -113,3 +114,28 @@ def dict2yaml(data):
 def yaml2dict(data):
     rlt = yaml.load(data)
     return rlt
+
+
+# Downlaod file with progress bar
+def download(url, file_name=None, verbose=True):
+    if not file_name:
+        file_name = url.split('/')[-1]
+    u = urllib2.urlopen(url)
+    f = open(file_name, 'wb')
+    meta = u.info()
+    file_size = int(meta.getheaders("Content-Length")[0])
+    print "Downloading: %s Bytes: %s" % (file_name, file_size)
+    file_size_dl = 0
+    block_sz = 8*1024
+    buf = ""
+    while True:
+        buf = u.read(block_sz)
+        if not buf:
+            break
+        file_size_dl += len(buf)
+        f.write(buf)
+        if verbose:
+            status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+            status = status + chr(8)*(len(status)+1)
+            print status,
+    f.close()

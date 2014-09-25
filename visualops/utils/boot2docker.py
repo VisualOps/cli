@@ -15,9 +15,7 @@ from visualops.utils.utils import error,warning
 def running(config, appid):
     try:
         out, err = subprocess.Popen(["boot2docker","status"],
-                                    env={"BOOT2DOCKER_PROFILE":os.path.join(config["config_path"],
-                                                                            "docker",
-                                                                            "boot2docker",
+                                    env={"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],
                                                                             "%s.cfg"%appid)},
                                     stdout=PIPE,stderr=PIPE).communicate()
     except Exception:
@@ -28,9 +26,7 @@ def running(config, appid):
 def ip(config, appid):
     try:
         out, err = subprocess.Popen(["boot2docker","ip"],
-                                    env={"BOOT2DOCKER_PROFILE":os.path.join(config["config_path"],
-                                                                            "docker",
-                                                                            "boot2docker",
+                                    env={"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],
                                                                             "%s.cfg"%appid)},
                                     stdout=PIPE,stderr=PIPE).communicate()
     except Exception:
@@ -42,9 +38,7 @@ def run(config, appid):
     if running(config, appid) is not True:
         try:
             out, err = subprocess.Popen(["boot2docker","start"],
-                                        env={"BOOT2DOCKER_PROFILE":os.path.join(config["config_path"],
-                                                                                "docker",
-                                                                                "boot2docker",
+                                        env={"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],
                                                                                 "%s.cfg"%appid)},
                                         stdout=PIPE,stderr=PIPE).communicate()
             if err:
@@ -58,9 +52,7 @@ def stop(config, appid):
     if running(config, appid) is True:
         try:
             out, err = subprocess.Popen(["boot2docker","stop"],
-                                        env={"BOOT2DOCKER_PROFILE":os.path.join(config["config_path"],
-                                                                                "docker",
-                                                                                "boot2docker",
+                                        env={"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],
                                                                                 "%s.cfg"%appid)},
                                         stdout=PIPE,stderr=PIPE).communicate()
             if err:
@@ -73,9 +65,7 @@ def stop(config, appid):
 def delete(config, appid):
     try:
         out, err = subprocess.Popen(["boot2docker","destroy"],
-                                    env={"BOOT2DOCKER_PROFILE":os.path.join(config["config_path"],
-                                                                            "docker",
-                                                                            "boot2docker",
+                                    env={"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],
                                                                             "%s.cfg"%appid)},
                                     stdout=PIPE,stderr=PIPE).communicate()
     except Exception:
@@ -87,9 +77,7 @@ def init(config, appid):
     delete(config,appid)
     try:
         out, err = subprocess.Popen(["boot2docker","init"],
-                                    env={"BOOT2DOCKER_PROFILE":os.path.join(config["config_path"],
-                                                                            "docker",
-                                                                            "boot2docker",
+                                    env={"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],
                                                                             "%s.cfg"%appid)},
                                     stdout=PIPE,stderr=PIPE).communicate()
     except Exception:
@@ -110,15 +98,13 @@ def gen_config(config, appid):
         return False
     conf = {
         "VM":appid,
-        "Dir":os.path.join(config["config_path"],"docker","boot2docker"),
-        "ISO":os.path.join(config["config_path"],"docker","boot2docker","boot2docker.iso"),
-        "SerialFile":os.path.join(config["config_path"],"docker","boot2docker","%s.sock"%appid),
+        "Dir":config["dirs"]["boot2docker"],
+        "ISO":os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso"),
+        "SerialFile":os.path.join(config["dirs"]["boot2docker"],"%s.sock"%appid),
     }
     for key in conf:
         out = re.sub(r"%s = (.*)\n"%(key),"%s = %s\n"%(key,conf[key]),out)
-    with open(os.path.join(config['config_path'],
-                           "docker",
-                           "boot2docker",
+    with open(os.path.join(config["dirs"]["boot2docker"],
                            "%s.cfg"%appid), 'w') as f:
         f.write(out)
     return True
@@ -149,7 +135,7 @@ def mount(name,volumes):
 # Test if has boot2docker
 def has():
     try:
-        subprocess.Popen(["boot2docker"]).wait()
+        subprocess.Popen(["boot2docker"],stdout=PIPE,stderr=PIPE).wait()
     except Exception:
         return False
     return True

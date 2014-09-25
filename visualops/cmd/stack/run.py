@@ -49,6 +49,7 @@ class Run(Command):
         config = {
             "interactive": True,
             "config_path": os.path.expanduser("~/.visualops"),
+            "boot2docker_iso": "https://s3.amazonaws.com/visualops-cli/boot2docker.iso",
 #            "volumes": {
 #                "hostname": {
 #                    "container": {
@@ -85,8 +86,20 @@ class Run(Command):
 
     # Run app
     def run_app(self, config, app_dict):
+#        import pdb
+#        pdb.set_trace()
         appname = utils.user_param(config, "Enter app name",app_dict.get("name","default-app"))
+        config["dirs"] = {
+            "containers": os.path.join(config["config_path"],"docker","containers"),
+            "boot2docker": os.path.join(config["config_path"],"docker","boot2docker"),
+        }
+        for d in config.get("dirs",[]):
+            if not os.path.exists(d):
+                os.makedirs(d)
         if boot2docker.has():
+            if not os.path.isfile(os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso")):
+                utils.download(config["boot2docker_iso"])
+
             if not boot2docker.gen_config(config, appname):
                 utils.error("Unable to generate boot2docker configuration")
                 return False
@@ -96,7 +109,7 @@ class Run(Command):
                 "hostpath": "/",
             },{
                 "volume": "containers",
-                "hostpath": os.path.join(config["config_path"],"docker","containers"),
+                "hostpath": config["dirs"]["containers"],
             }])
             boot2docker.run(config, appname)
             config["chroot"] = os.path.join("/mnt/host",config.get("chroot"))
