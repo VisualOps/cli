@@ -1,7 +1,7 @@
 import logging
 
 from cliff.command import Command
-from visualops.utils import dockervisops,boot2docker,utils
+from visualops.utils import dockervisops,boot2docker,utils,db
 
 
 class Terminate(Command):
@@ -11,12 +11,24 @@ class Terminate(Command):
 
     def get_parser(self, prog_name):
         parser = super(Terminate, self).get_parser(prog_name)
-        parser.add_argument('region_name', nargs='?', default='')
+        parser.add_argument('-l', '--local', action='store_true', dest='terminate_app_local', help='terminate local app')
         parser.add_argument('app_id', nargs='?', default='')
         return parser
 
     def take_action(self, parsed_args):
         self.app.stdout.write('app terminate TO-DO!\n')
+
+        app_id = parsed_args.app_id
+
+        if parsed_args.terminate_app_local:
+            print 'terminate local app ...'
+        else:
+            print 'terminate remote app ...(not support yet)'
+            return
+
+        #save app state
+        db.terminate_app( app_id )
+
 
     # Terminate app
     def terminate_app(self, config, appname, app_dict):

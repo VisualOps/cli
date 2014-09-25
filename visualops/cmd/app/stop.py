@@ -1,7 +1,7 @@
 import logging
 
 from cliff.command import Command
-from visualops.utils import dockervisops,boot2docker,utils
+from visualops.utils import dockervisops,boot2docker,utils,db
 
 
 class Stop(Command):
@@ -11,12 +11,24 @@ class Stop(Command):
 
     def get_parser(self, prog_name):
         parser = super(Stop, self).get_parser(prog_name)
-        parser.add_argument('region_name', nargs='?', default='')
+        parser.add_argument('-l', '--local', action='store_true', dest='stop_app_local', help='stop local app')
         parser.add_argument('app_id', nargs='?', default='')
         return parser
 
     def take_action(self, parsed_args):
         self.app.stdout.write('app stop TO-DO!\n')
+
+        app_id = parsed_args.app_id
+
+        if parsed_args.stop_app_local:
+            print 'stop local app ...'
+        else:
+            print 'stop remote app ...(not support yet)'
+            return
+
+
+        #save app state
+        db.stop_app( app_id )
 
 
     # Stop app

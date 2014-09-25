@@ -48,6 +48,7 @@ class Pull(Command):
             #generate yaml
             app = {
                 'name'  : stack_json['name'],
+                'region': stack_json['region'],
                 'hosts' : {},
                 'hosts_table' : {},
             }

@@ -3,7 +3,7 @@ import os
 import yaml
 import json
 from cliff.command import Command
-from visualops.utils import dockervisops,boot2docker,utils
+from visualops.utils import dockervisops,boot2docker,utils,db
 
 
 class Run(Command):
@@ -82,6 +82,9 @@ class Run(Command):
         }
 
         self.run_app(config, app)
+
+        #insert app to local db
+        db.create_app(app['name'], stack_id, app['region'])
 
 
     # Run app

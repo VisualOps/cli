@@ -1,7 +1,7 @@
 import logging
 
 from cliff.command import Command
-from visualops.utils import dockervisops,boot2docker,utils
+from visualops.utils import dockervisops,boot2docker,utils,db
 
 
 class Start(Command):
@@ -11,12 +11,24 @@ class Start(Command):
 
     def get_parser(self, prog_name):
         parser = super(Start, self).get_parser(prog_name)
-        parser.add_argument('region_name', nargs='?', default='')
+        parser.add_argument('-l', '--local', action='store_true', dest='start_app_local', help='start local app')
         parser.add_argument('app_id', nargs='?', default='')
         return parser
 
     def take_action(self, parsed_args):
         self.app.stdout.write('app start TO-DO!\n')
+
+        app_id = parsed_args.app_id
+
+        if parsed_args.start_app_local:
+            print 'start local app ...'
+        else:
+            print 'start remote app ...(not support yet)'
+            return
+
+        #save app state
+        db.start_app( app_id )
+
 
     # Start app
     def start_app(self, config, appname, app_dict):

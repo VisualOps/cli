@@ -13,7 +13,7 @@ class Info(ShowOne):
 
     def get_parser(self, prog_name):
         parser = super(Info, self).get_parser(prog_name)
-        parser.add_argument('region_name', nargs='?', default='')
+        parser.add_argument('-l', '--local', action='store_true', dest='info_app_local', help='get local app info')
         parser.add_argument('app_id', nargs='?', default='')
         return parser
 

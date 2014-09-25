@@ -100,3 +100,13 @@ put the `bash_complete script` to `/etc/bash_completion.d/visualops`
 
 ##use auto-complete
 press `tab` twice when input command
+
+
+
+[install docker]
+=====================================================
+## ubuntu 14.04
+apt-get -y install docker.io
+ln -sf /usr/bin/docker.io /usr/local/bin/docker
+sed -i '$acomplete -F _docker docker' /etc/bash_completion.d/docker.io
+update-rc.d docker.io defaults
