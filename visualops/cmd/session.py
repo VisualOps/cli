@@ -31,7 +31,12 @@ class Login(Command):
         (err, result) = rpc.login(username, passwd)
 
         if err:
-            raise RuntimeError('login failed:( ({0})'.format(err))
+            if err == constant.ERROR['UserInvalidUser']:
+                raise RuntimeError('Invalid username or password'.format(err))
+            elif err == constant.ERROR['UserNoUser']:
+                raise RuntimeError('User {0} not existed'.format(username))
+            else:
+                raise RuntimeError('login failed:( ({0})'.format(err))
         else:
 
             print('\nSucceeded!')
@@ -58,7 +63,7 @@ class Logout(Command):
         (err, result) = rpc.logout(username, session_id)
 
         if err:
-            if err == constant.E_SESSION:
+            if err == constant.ERROR['GlobalErrorSession']:
                 raise RuntimeError('Your Session is invalid, no need logout!')
             else:
                 raise RuntimeError('logout failed:( ({0})'.format(err))

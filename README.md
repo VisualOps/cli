@@ -105,7 +105,7 @@ press `tab` twice when input command
 
 [install docker]
 =====================================================
-## ubuntu 14.04
+## ubuntu 14.04 (http://beta-docs.docker.io/installation/ubuntulinux/)
 apt-get -y install docker.io
 ln -sf /usr/bin/docker.io /usr/local/bin/docker
 sed -i '$acomplete -F _docker docker' /etc/bash_completion.d/docker.io

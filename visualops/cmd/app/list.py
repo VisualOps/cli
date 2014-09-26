@@ -10,7 +10,8 @@ class List(Lister):
     def get_parser(self, prog_name):
         parser = super(List, self).get_parser(prog_name)
         parser.add_argument('-l', '--local', action='store_true', dest='list_app_local', help='get local app list')
-        parser.add_argument('region_name', nargs='?', default='')
+        parser.add_argument('--filter', action='store', dest='filter_name', nargs='?', default='', help='filter by app name')
+        parser.add_argument('--region', action='store', dest='region_name', nargs='?', default='', help='specified region')
         return parser
 
     def take_action(self, parsed_args):
@@ -19,7 +20,7 @@ class List(Lister):
         if parsed_args.list_app_local:
             print 'List local app....'
             rlt = db.get_app_list()
-            return (( 'Id', 'Name', 'Stack Id', 'Region', 'State', 'Create At', 'Change At' , 'Position' ), rlt)
+            return (( 'Name', 'Source Id', 'Region', 'State', 'Create At', 'Change At'), rlt)
 
         else:
             print 'List remote app....'
@@ -33,6 +34,6 @@ class List(Lister):
                 raise RuntimeError('get app list failed:( ({0})'.format(err))
             else:
                 self.app.stdout.write('get {0} app list succeed!\n'.format(len(result)))
-                return (('Region', 'Id', 'Name', 'State'),
-                    ((app["region"], app["id"], app["name"], app["state"]) for app in result)
+                return (('Id', 'Name', 'Region', 'State'),
+                    ((app["id"], app["name"], app["region"], app["state"]) for app in result if (parsed_args.filter_name.lower() in app['name'].lower() and app["state"] in ["Running"]) )
                 )

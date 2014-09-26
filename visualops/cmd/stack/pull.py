@@ -30,7 +30,7 @@ class Pull(Command):
         (err, result) = rpc.stack_info(username, session_id, None, [stack_id])
 
         if err:
-            if err == constant.E_SESSION:
+            if err == constant.ERROR['GlobalErrorSession']:
                 raise RuntimeError('Your Session is invalid, please re-login!')
             else:
                 raise RuntimeError('pull stack failed:( ({0})'.format(err))

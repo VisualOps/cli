@@ -8,6 +8,7 @@ import yaml
 import urllib2
 import contextlib
 from datetime import date
+from prettytable import PrettyTable
 
 DEFAULT_YEAR  = date.today().year
 PROGRESS_RE = re.compile(r'\((\s?\d+)%\)')
@@ -116,6 +117,21 @@ def yaml2dict(data):
     rlt = yaml.load(data)
     return rlt
 
+def dict2str(data):
+    return str(data)
+
+def str2dict(str):
+    return eval(str)
+
+# Pretty Print table in tabular format
+def print_prettytable(title,rows):
+    x = PrettyTable(title)
+    x.padding_width = 1 # One space between column edges and contents (default)
+    for col in title:
+        x.align[col] = "l"
+    for row in rows:
+        x.add_row(row)
+    return x
 
 # Downlaod file with progress bar
 def download(url, file_name=None, verbose=True):

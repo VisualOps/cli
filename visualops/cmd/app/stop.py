@@ -1,7 +1,9 @@
 import logging
+import json
 
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,db
+
 
 
 class Stop(Command):
@@ -16,21 +18,27 @@ class Stop(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.app.stdout.write('app stop TO-DO!\n')
 
-        app_id = parsed_args.app_id
-        appname = ""# TODO jimmy
-        app = {}#TODO jimmy
+        app_id   = parsed_args.app_id
+
+        #get app data from local db
+        (appname,app) = db.get_app_data( app_id )
+        if not (appname and app):
+            raise RuntimeError('Can not find local app {0}'.format(app_id))
+
+        self.log.debug( '==============================================================' )
+        self.log.debug(">found app %s in local db" % appname)
+        self.log.debug(">app_data")
+        self.log.debug( json.dumps(app, indent=4) )
+        self.log.debug( '==============================================================' )
 
         config = utils.gen_config(appname)
-
         if parsed_args.stop_app_local:
             self.stop_app(config, appname, app)
-            print 'stop local app ...'
+            print 'Stopping local app ...'
         else:
-            print 'stop remote app ...(not support yet)'
+            print 'Stopping remote app ...(not support yet)'
             return
-
 
         #save app state
         db.stop_app(appname)
