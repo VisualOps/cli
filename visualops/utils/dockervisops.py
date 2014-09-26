@@ -902,6 +902,7 @@ def pull(config, repo, tag=None, username=None, password=None, email=None, *args
             url = (url[0] if len(url) > 1 else None)
             if not login(config,username,password,email,url):
                 raise Exception("Can't login")
+        print "Pulling repository %s ... (This may take a while)"%repo
         ret = client.pull(repo, tag=tag)
         if ret:
             logs, infos = _parse_image_multilogs_string(config, ret, repo)
@@ -1202,6 +1203,8 @@ def preproc_deploy(config, appname, hostname, state):
         if hasattr(eval(action), '__call__'):
             if action in _deploy.get("convert",{}):
                 actions[action] = _deploy["convert"][action](config, appname, hostname, params)
+            else:
+                actions[action] = params
         else:
             utils.error("Action not found: %s"%action)
     return actions

@@ -136,6 +136,7 @@ class Run(Command):
                                                                                     config["appname"],
                                                                                     hostname,
                                                                                     app_dict["hosts"][hostname][state][container]))
+        print actions
         config["actions"] = actions
         app = {}
         for hostname in actions:
