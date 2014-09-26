@@ -140,6 +140,7 @@ def download(url, file_name=None, verbose=True):
             status = status + chr(8)*(len(status)+1)
             print(status,end="")
     f.close()
+    print("%10d  [100.00%%]"%(file_size_dl))
 
 # mute call
 class DummyFile(object):

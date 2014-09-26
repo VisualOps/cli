@@ -19,9 +19,9 @@ def running(config, appid):
                                         {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
                                     ),
                                     stdout=PIPE,stderr=PIPE).communicate()
-    except Exception:
+    except Exception as e:
         return False
-    return (True if re.search(out,"running") else False)
+    return (True if re.search("running",out) else False)
 
 # Get boot2docker VM IP
 def ip(config, appid):
