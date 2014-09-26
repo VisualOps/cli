@@ -1231,7 +1231,6 @@ def generate_hosts(config, app):
     '''
     hosts = {app[container]["NetworkSettings"]["IPAddress"]:app[container]["Name"].replace('/','') for container in app}
     for container in app:
-        print "path=%s"%os.path.join(config["config_path"],"docker","containers",app[container]["Id"],"hosts")
         path = (app[container]["HostsPath"]
                 if boot2docker.has() is not True
                 else os.path.join(config["config_path"],"docker","containers",app[container]["Id"],"hosts"))
