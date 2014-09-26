@@ -19,15 +19,19 @@ class Reboot(Command):
         self.app.stdout.write('app reboot TO-DO!\n')
 
         app_id = parsed_args.app_id
+        appname = ?#TODO jimmy
+
+        config = utils.gen_config(appname)
 
         if parsed_args.reboot_app_local:
+            self.reboot_app(config, appname, app)
             print 'reboot local app ...'
         else:
             print 'reboot remote app ...(not support yet)'
             return
 
         #save app state
-        db.start_app( app_id )
+        db.start_app(appname)
 
     # Reboot app
     def reboot_app(self, config, appname, app_dict):

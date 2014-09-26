@@ -163,3 +163,13 @@ def render_table(app):
                 for container in app[hostname][state]:
                     r[hostname].append(container)
     return r
+
+
+# configuration generator
+def gen_config(appname=None):
+    return ({
+        "appname" : appname,
+        "interactive": True,
+        "config_path": os.path.expanduser("~/.visualops"),
+        "boot2docker_iso": "https://s3.amazonaws.com/visualops-cli/boot2docker.iso",
+    })

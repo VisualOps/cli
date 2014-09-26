@@ -19,15 +19,19 @@ class Terminate(Command):
         self.app.stdout.write('app terminate TO-DO!\n')
 
         app_id = parsed_args.app_id
+        appname = ? # TODO jimmy
+
+        config = utils.gen_config(appname)
 
         if parsed_args.terminate_app_local:
+            self.terminate_app(config, appname, app)
             print 'terminate local app ...'
         else:
             print 'terminate remote app ...(not support yet)'
             return
 
         #save app state
-        db.terminate_app( app_id )
+        db.terminate_app(appname)
 
 
     # Terminate app

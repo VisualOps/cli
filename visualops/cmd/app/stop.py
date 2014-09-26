@@ -19,8 +19,12 @@ class Stop(Command):
         self.app.stdout.write('app stop TO-DO!\n')
 
         app_id = parsed_args.app_id
+        appname = ? # TODO jimmy
+
+        config = utils.gen_config(appname)
 
         if parsed_args.stop_app_local:
+            self.stop_app(config, appname, app)
             print 'stop local app ...'
         else:
             print 'stop remote app ...(not support yet)'
@@ -28,11 +32,11 @@ class Stop(Command):
 
 
         #save app state
-        db.stop_app( app_id )
+        db.stop_app(appname)
 
 
     # Stop app
-    def stop_app(self, config, appname, app_dict):
+    def stop_app(self, config, apppname, app_dict):
         if boot2docker.has():
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appname))
         for hostname in app_dict.get("hosts",{}):

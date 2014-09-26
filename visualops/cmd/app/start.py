@@ -19,15 +19,19 @@ class Start(Command):
         self.app.stdout.write('app start TO-DO!\n')
 
         app_id = parsed_args.app_id
+        appname = ? # TODO jimmy
+
+        config = utils.gen_config(appname)
 
         if parsed_args.start_app_local:
+            self.start_app(config, appname, app)
             print 'start local app ...'
         else:
             print 'start remote app ...(not support yet)'
             return
 
         #save app state
-        db.start_app( app_id )
+        db.start_app(appname)
 
 
     # Start app
