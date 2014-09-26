@@ -19,7 +19,8 @@ class Stop(Command):
         self.app.stdout.write('app stop TO-DO!\n')
 
         app_id = parsed_args.app_id
-        appname = ? # TODO jimmy
+        appname = ""# TODO jimmy
+        app = {}#TODO jimmy
 
         config = utils.gen_config(appname)
 
@@ -36,7 +37,7 @@ class Stop(Command):
 
 
     # Stop app
-    def stop_app(self, config, apppname, app_dict):
+    def stop_app(self, config, appname, app_dict):
         if boot2docker.has():
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appname))
         for hostname in app_dict.get("hosts",{}):

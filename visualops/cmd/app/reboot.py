@@ -19,7 +19,8 @@ class Reboot(Command):
         self.app.stdout.write('app reboot TO-DO!\n')
 
         app_id = parsed_args.app_id
-        appname = ?#TODO jimmy
+        appname = ""#TODO jimmy
+        app = {}#TODO jimmy
 
         config = utils.gen_config(appname)
 

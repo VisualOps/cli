@@ -122,15 +122,20 @@ class Run(Command):
             boot2docker.run(config, config["appname"])
             config["chroot"] = os.path.join("/mnt/host",config.get("chroot",""))
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,config["appname"]))
-        app = {}
         config["hosts_table"] = app_dict.get("hosts_table",{})
-        config["render_table"] = utils.render_table(app_dict.get("hosts_table",{}))
+        actions = {}
         for hostname in app_dict.get("hosts",{}):
+            actions[hostname] = {}
             for state in app_dict["hosts"][hostname]:
                 if state == "linux.docker.deploy":
                     for container in app_dict["hosts"][hostname][state]:
-                        app.update(dockervisops.deploy(config,
-                                                       config["appname"],
-                                                       hostname,
-                                                       app_dict["hosts"][hostname][state][container]))
+                        actions[hostname][container] = (dockervisops.preproc_deploy(config,
+                                                                                    config["appname"],
+                                                                                    hostname,
+                                                                                    app_dict["hosts"][hostname][state][container]))
+        config["actions"] = actions
+        app = {}
+        for hostname in actions:
+            for container in actions[hostname]:
+                app.update(config, actions[hostname][container])
         dockervisops.generate_hosts(config, app)

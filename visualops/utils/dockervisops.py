@@ -18,6 +18,8 @@ from visualops.utils import boot2docker
 from visualops.utils import utils
 from visualops.utils import db
 
+IPS=["PrivateIp","PublicIp","PrivateIpAddress","PublicIpAddress"]
+
 ## Helpers
 def _get_config():
     '''
@@ -918,11 +920,32 @@ def pull(config, repo, tag=None, username=None, password=None, email=None, *args
 ##
 
 
+## Files state
+def create_files(config, container, files):
+    for f in files:
+        path = f.get("key")
+        if not path:
+            utils.error("Unable to read config file path.")
+            continue
+        dir_path = os.path.join(config["config_path"],"docker","files",container)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        host_path = os.path.join(dir_path,("%s"%path).replace('/','-'))
+        content = render(config, path, f.get("value",""))
+        try:
+            with open(host_path, 'w') as f:
+                f.write(content)
+            print "Configuration file %s created: %s."%path
+        except Exception as e:
+            utils.error("Unable to store configuration file %s."%host_path)
+            continue
+    return None, False
+##
+
+
 ## Deploy
-def _create_files(config, state_params, exec_params):
+def _create_files_volumes(config, state_params, exec_params):
     volumes = []
-    print state_params
-    print "----"
     for f in state_params.get("files",[]):
         path = f.get("key")
         if not path:
@@ -930,17 +953,7 @@ def _create_files(config, state_params, exec_params):
             continue
         print "Configuration file found: %s."%path
         dir_path = os.path.join(config["config_path"],"docker","files",state_params["container"])
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
         host_path = os.path.join(dir_path,("%s"%path).replace('/','-'))
-        content = f.get("value","")
-        # TODO render
-        try:
-            with open(host_path, 'w') as f:
-                f.write(content)
-        except Exception as e:
-            utils.error("Unable to store configuration file %s."%host_path)
-            continue
         volumes.append({"key":host_path,"value":path})
     return exec_params.get("volumes",[])+volumes
 
@@ -1030,6 +1043,9 @@ def _convert_running(config, appname, hostname, addin):
             # persist
             config["volumes"][hostname][addin["container"]][key] = value
 
+
+
+
             mp = value.split(":")
             ro = (True if (len(mp) == 2 and mp[1] == "ro") else False)
             value = mp[0]
@@ -1115,6 +1131,10 @@ def _convert_running(config, appname, hostname, addin):
 
 _deploy = {
     'attr' : {
+        "create_files": {
+            'container'     : 'container',
+            'files'         : 'files',
+        },
         "pull" : {
             'image'         : 'repo',
             'tag'           : 'tag',
@@ -1140,10 +1160,11 @@ _deploy = {
             'port_bindings' : 'port_bindings',
             'count'         : 'count',
             # deploy
-            'files'         : _create_files,
+            'files'         : _create_files_volumes,
         },
     },
     'split' : [
+        "create_files",
         "pull",
         "running"
     ],
@@ -1154,8 +1175,8 @@ _deploy = {
 
 
 
-# deploy a container
-def deploy(config, appname, hostname, state):
+# preproc deploy a container
+def preproc_deploy(config, appname, hostname, state):
     if "container" not in state:
         utils.error("Container name missing")
         return {}
@@ -1164,7 +1185,7 @@ def deploy(config, appname, hostname, state):
         return {}
     state["container"] = "%s-%s-%s"%(appname,hostname,state["container"])
     print "--> Preparing to run container(s) %s from image %s ..."%(state["container"],state["image"])
-    out = {}
+    actions = {}
     for action in _deploy.get('split',[]):
         params = {}
         for param in _deploy.get('attr',{}).get(action,{}):
@@ -1180,12 +1201,19 @@ def deploy(config, appname, hostname, state):
                 params[_deploy['attr'][action][param]] = state[param]
         if hasattr(eval(action), '__call__'):
             if action in _deploy.get("convert",{}):
-                params = _deploy["convert"][action](config, appname, hostname, params)
-            out[action], failure = eval(action)(config, **params)
-            if failure:
-                break
+                actions[action] = _deploy["convert"][action](config, appname, hostname, params)
         else:
             utils.error("Action not found: %s"%action)
+    return actions
+
+# deploy a container
+def deploy(config, actions):
+    out = {}
+    for action in actions:
+        if hasattr(eval(action), '__call__'):
+            out[action], failure = eval(action)(config, **actions[action])
+            if failure:
+                break
     app = {}
     for container in out["running"]:
         name = container.get("container")
@@ -1215,8 +1243,36 @@ def generate_hosts(config, app):
             utils.error(e)
 ##
 
-# TODO
-def render(config, content):
-    objs = re.search("@{(%s)\.(.*?)}",content)
-    for obj in objs:
-        pass
+## renderer
+def list_containers(host):
+    return [c for container in host for c in host[container]["containers"]]
+
+def render(config, filename, content):
+    rendered = ""
+    l = 1
+    for line in content.split("\n"):
+        objs = re.findall("@{(?P<uid>.*?)\.(?P<param>.*?)}",line)
+        for obj in objs:
+            if obj[1] not in IPS: continue
+            hostname = config["hosts_table"].get(obj[0])
+            containers = list_containers(config["actions"].get(hostname,{}))
+            if len(containers) == 0:
+                ip = "127.0.0.1"
+            elif len(containers) == 1:
+                ip = containers.pop()
+            else:
+                # TODO (release 2): render with config
+                ip = utils.user_param(config,
+                                      '''
+Multiple containers found on instance %s.
+Note: if you are not sure, and correctly binded your ports, you can try to leave as default.
+
+Context: file %s, line %s: %s
+Please, specify which container to use: %s
+                                      '''%(hostname,filename,l,line,", ".join(containers)),
+                                      "127.0.0.1")
+            line = re.sub("@{%s\.(.*?)}"%obj[0],ip,line,count=1)
+        rendered += "%s\n"%line
+        l += 1
+    return (rendered[:-1] if (rendered[-1:] == '\n' and content[-1:] != '\n') else rendered)
+##

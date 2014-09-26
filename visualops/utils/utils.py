@@ -152,19 +152,6 @@ def nostdout():
     yield
     sys.stdout = save_stdout
 
-# render table from app
-def render_table(app):
-    # TODO: with count + appname + hostname
-    r = {}
-    for hostname in app:
-        r.setdefault(hostname,[])
-        for state in app[hostname]:
-            if state == "linux.docker.deploy":
-                for container in app[hostname][state]:
-                    r[hostname].append(container)
-    return r
-
-
 # configuration generator
 def gen_config(appname=None):
     return ({
