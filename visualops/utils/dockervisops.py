@@ -18,6 +18,10 @@ from visualops.utils import boot2docker
 from visualops.utils import utils
 from visualops.utils import db
 
+import logging
+requests_log = logging.getLogger("requests")
+requests_log.setLevel(logging.WARNING)
+
 IPS=["PrivateIp","PublicIp","PrivateIpAddress","PublicIpAddress"]
 
 ## Helpers
@@ -977,7 +981,7 @@ def _convert_running(config, appname, hostname, addin):
 
             # get user input
             ui = utils.user_param(config,
-                                  "Update port binding for %s: %s=%s"%(addin["container"],key,value),
+                                  "Update port binding for %s (host=container): %s=%s"%(addin["container"],key,value),
                                   (None
                                    if key not in config["port_bindings"][hostname].get(addin["container"],{})
                                    else "%s=%s"%((key if key else ""),(value if value else ""))))
@@ -989,7 +993,7 @@ def _convert_running(config, appname, hostname, addin):
             if len(ui) != 2:
                 utils.error("Wrong port binding syntax")
                 continue
-            key, value = ui[0], ui[1]
+            key, value = ui[1], ui[0]
             # persist
             config["port_bindings"][hostname][addin["container"]][key] = value
 
@@ -1211,7 +1215,7 @@ def deploy(config, actions):
                 break
     app = {}
     for container in out.get("running",[]):
-        name = container.get("container")
+        name = container.get("Name").replace("/","")
         print "--> Container successfully started %s."%name
         db.create_container(config["appname"], container.get("Id"), name)
         app[name] = container
