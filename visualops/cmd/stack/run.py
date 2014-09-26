@@ -104,14 +104,15 @@ class Run(Command):
             if not os.path.exists(config["dirs"][d]):
                 os.makedirs(config["dirs"][d])
         if boot2docker.has():
+            print "Starting Boot2docker ... (this may take a while)"
             if not os.path.isfile(os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso")):
                 utils.download(config["boot2docker_iso"],os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso"))
 
             if not boot2docker.gen_config(config, config["appname"]):
                 utils.error("Unable to generate boot2docker configuration")
                 return False
-            boot2docker.delete(config, config["appname"])
-            boot2docker.init(config, config["appname"])
+#            boot2docker.delete(config, config["appname"])
+#            boot2docker.init(config, config["appname"])
             boot2docker.mount(config["appname"], [{
                 "volume": "root",
                 "hostpath": "/",
@@ -136,7 +137,6 @@ class Run(Command):
                                                                                     config["appname"],
                                                                                     hostname,
                                                                                     app_dict["hosts"][hostname][state][container]))
-        print actions
         config["actions"] = actions
         app = {}
         for hostname in actions:

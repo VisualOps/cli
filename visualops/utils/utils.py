@@ -150,8 +150,11 @@ class DummyFile(object):
 def nostdout():
     save_stdout = sys.stdout
     sys.stdout = DummyFile()
+    save_stderr = sys.stderr
+    sys.stderr = DummyFile()
     yield
     sys.stdout = save_stdout
+    sys.stderr = save_stderr
 
 # configuration generator
 def gen_config(appname=None):

@@ -57,8 +57,7 @@ def _get_client(config, url=None, version=None, timeout=None):
     '''
     if config.get("docker_sock"):
         url=config["docker_sock"]
-    with utils.nostdout():
-        client = docker.Client(base_url=url)
+    client = docker.Client(base_url=url)
     # force 1..5 API for registry login
     if not version:
         if client._version == '1.4':
@@ -177,10 +176,6 @@ def _parse_image_multilogs_string(config, ret, repo):
         for l in image_logs:
             if isinstance(l, dict):
                 if l.get('status') == 'Download complete' and l.get('id'):
-                    print ":::::::"
-                    print l
-                    print repo
-                    print "!"
                     infos = _get_image_infos(config, repo)
                     break
     return image_logs, infos
@@ -776,8 +771,6 @@ def installed(config,
 
     if container:
         print "Container created, id: %s"%(container.get("Id"))
-        #save container info to db
-        db.create_container( config["app_id"], container.get("Id"), name)
     else:
         utils.error("Couldn't create container.")
     return container
@@ -936,10 +929,9 @@ def create_files(config, container, files):
         try:
             with open(host_path, 'w') as f:
                 f.write(content)
-            print "Configuration file %s created: %s."%path
+            print "Configuration file %s created: %s."%(path,host_path)
         except Exception as e:
-            utils.error("Unable to store configuration file %s."%host_path)
-            continue
+            utils.error("Unable to store configuration file %s: %s"%(host_path,e))
     return None, False
 ##
 
@@ -1218,9 +1210,10 @@ def deploy(config, actions):
             if failure:
                 break
     app = {}
-    for container in out["running"]:
+    for container in out.get("running",[]):
         name = container.get("container")
         print "--> Container successfully started %s."%name
+        db.create_container(config["appname"], container.get("Id"), name)
         app[name] = container
     return app
 
