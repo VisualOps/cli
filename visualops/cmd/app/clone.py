@@ -27,14 +27,14 @@ class Clone(Command):
 
         app_id = parsed_args.app_id
 
-        print 'pulling %s from remote ....\n' % app_id
+        print 'Pulling %s from remote ....\n' % app_id
         (err, result) = rpc.app_info(username, session_id, None, [app_id])
 
         if err:
             utils.hanlde_error(err,result)
         else:
             if len(result) == 0:
-                self.app.stdout.write('The app does not exist\n')
+                print('The app does not exist\n')
                 return (),()
 
             self.log.debug('> pull app %s succeed\n' %  app_id )
@@ -55,7 +55,7 @@ class Clone(Command):
 
                     app['hosts_table'][uid] = comp['name']
 
-                    log_str = '>Found instance {0}'.format(comp['name'])
+                    log_str = '> found instance {0}'.format(comp['name'])
 
                     if comp['state']:
                         log_str+=': has %s state(s)' % len(comp['state'])
@@ -79,7 +79,7 @@ class Clone(Command):
             with open(app_file,'w+') as f:
                 f.writelines( app_yaml )
 
-            self.log.debug( '\nDocker state info' )
+            self.log.debug( '\n> docker state info' )
             self.log.debug( '==============================================================' )
             self.log.debug( app_yaml )
             self.log.debug( '==============================================================' )
@@ -89,7 +89,7 @@ class Clone(Command):
 
 
             try:
-                self.log.debug( ">Load data from %s" % app_file )
+                self.log.debug( "> load data from %s" % app_file )
                 stream = open(app_file, 'r')
                 app = yaml.load(stream)
             except Exception:

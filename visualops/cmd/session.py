@@ -34,9 +34,9 @@ class Login(Command):
 
             print('\nLogin Success!')
             # Save session
-            self.log.debug('>Start save session...')
+            self.log.debug('> start save session...')
             utils.save_session(result)
-            self.log.debug('>Save session succeed')
+            self.log.debug('> save session succeed')
 
 
 class Logout(Command):
@@ -51,11 +51,16 @@ class Logout(Command):
             print 'Invalid login, no need logout!'
             return
 
+        while True:
+            confirm = raw_input('Are you sure to logout? [Y/n]:')
+            if not confirm or confirm.lower() in ['y','n']:
+                break
 
-        # Logout
-        (err, result) = rpc.logout(username, session_id)
+        if not confirm or confirm.lower() == 'y':
+            # Logout
+            (err, result) = rpc.logout(username, session_id)
 
-        if err:
-            utils.hanlde_error(err,result)
-        else:
-            print('\nLogout Success!')
+            if err:
+                utils.hanlde_error(err,result)
+            else:
+                print('\nLogout Success!')

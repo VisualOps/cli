@@ -29,7 +29,7 @@ class Info(ShowOne):
             print('Get stack info failed')
             utils.hanlde_error(err,result)
         else:
-            self.log.debug('>Get {0} stack(s) info'.format(len(result)))
+            self.log.debug('> get {0} stack(s) info'.format(len(result)))
 
             if len(result) == 0:
                 return (),()
@@ -44,7 +44,7 @@ class Info(ShowOne):
             for (uid,comp) in stack_json['component'].items():
                 if unicode(comp['type']) == constant.RESTYPE['INSTANCE']:
 
-                    log_str = '>Found instance {0}'.format(comp['name'])
+                    log_str = '> found instance {0}'.format(comp['name'])
 
                     if comp['state']:
                         log_str+=': has %s state(s)' % len(comp['state'])

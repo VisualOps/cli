@@ -1,3 +1,7 @@
+'''
+note: Local db operation wrapper
+'''
+
 import sqlite3
 import os
 import datetime

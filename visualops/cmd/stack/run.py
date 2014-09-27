@@ -34,11 +34,11 @@ class Run(Command):
             return
 
         try:
-            self.log.debug( ">Load data from %s" % stack_file )
+            self.log.debug( "> load data from %s" % stack_file )
             stream = open(stack_file, 'r')
             app = yaml.load(stream)
         except Exception:
-            raise RuntimeError('Load yaml error!')
+            raise RuntimeError('load yaml error!')
 
         if not app:
             raise RuntimeError('stack json is invalid!')

@@ -26,8 +26,8 @@ class Reboot(Command):
             raise RuntimeError('Can not find local app {0}'.format(app_id))
 
         self.log.debug( '==============================================================' )
-        self.log.debug(">found app %s in local db" % appname)
-        self.log.debug(">app_data")
+        self.log.debug("> found app %s in local db" % appname)
+        self.log.debug("> app_data")
         self.log.debug( json.dumps(app, indent=4) )
         self.log.debug( '==============================================================' )
 
@@ -35,9 +35,9 @@ class Reboot(Command):
 
         if parsed_args.reboot_app_local:
             self.reboot_app(config, appname, app)
-            print 'reboot local app ...'
+            print 'Reboot local app ...'
         else:
-            print 'reboot remote app ...(not support yet)'
+            print 'Reboot remote app ...(not support yet)'
             return
 
         #save app state
@@ -56,4 +56,4 @@ class Reboot(Command):
                             print "Container %s restarted"%container
                         else:
                             utils.error("Unable to restart container %s"%container)
-        print "app %s restarted."%appname
+        print "App %s restarted."%appname

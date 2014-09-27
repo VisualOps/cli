@@ -26,8 +26,8 @@ class Terminate(Command):
             raise RuntimeError('Can not find local app {0}'.format(app_id))
 
         self.log.debug( '==============================================================' )
-        self.log.debug(">found app %s in local db" % appname)
-        self.log.debug(">app_data")
+        self.log.debug("> found app %s in local db" % appname)
+        self.log.debug("> app_data")
         self.log.debug( json.dumps(app, indent=4) )
         self.log.debug( '==============================================================' )
 
@@ -35,9 +35,9 @@ class Terminate(Command):
 
         if parsed_args.terminate_app_local:
             self.terminate_app(config, appname, app)
-            print 'terminate local app ...'
+            print 'Terminate local app ...'
         else:
-            print 'terminate remote app ...(not support yet)'
+            print 'Terminate remote app ...(not support yet)'
             return
 
         #save app state
@@ -58,5 +58,5 @@ class Terminate(Command):
                             utils.error("Unable to remove container %s"%container)
         if boot2docker.has():
             boot2docker.delete(config, appname)
-        print "app %s terminated."%appname
+        print "App %s terminated."%appname
 

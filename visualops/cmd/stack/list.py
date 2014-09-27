@@ -4,7 +4,7 @@ from cliff.lister import Lister
 
 
 class List(Lister):
-    "List your stacks, locally or on AWS"
+    "List your stacks in VisualOps"
 
     log = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class List(Lister):
             print('Get stack list failed')
             utils.hanlde_error(err,result)
         else:
-            self.log.debug('>get {0} stack(s) list succeed!\n'.format(len(result)))
+            self.log.debug('> get {0} stack(s) list succeed!\n'.format(len(result)))
             print "Stacks:"
             return (('Id', 'Name', 'Region', 'URL'),
                 ((stack["id"], stack["name"], stack["region"], constant.IDE_URL + stack['id']) for stack in result if parsed_args.filter_name.lower() in stack['name'].lower() )

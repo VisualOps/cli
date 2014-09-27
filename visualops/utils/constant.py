@@ -1,6 +1,7 @@
 
 #IDE URL
-IDE_URL = 'https://ide.mc3.io/ops/'
+IDE_URL = 'http://ide.mc3.io/ops/'
+API_URL = 'http://api.mc3.io'
 
 # AppService Error Code
 ERROR = {
@@ -32,7 +33,7 @@ ERROR = {
 
     100 : 'Sorry, we are suffering from some technical issue, please try again later'  ,   # GlobalErrorInit
     101 : 'Invalid API Parameters'  ,                   # GlobalErrorApi
-    102 : 'Invalid session, please login again'  ,      # GlobalErrorSession
+    102 : 'Invalid session, please login again with "visualops login"'  ,      # GlobalErrorSession
     103 : 'DB operation failed'  ,                      # GlobalErrorDb
     104 : 'Region mismatched'  ,                        # GlobalErrorRegion
     105 : 'Id mismatched'  ,                            # GlobalErrorId

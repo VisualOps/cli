@@ -26,7 +26,7 @@ class Pull(Command):
 
         stack_id = parsed_args.stack_id
 
-        print 'pulling %s from remote ....\n' % stack_id
+        print 'Pulling %s from remote ....\n' % stack_id
         (err, result) = rpc.stack_info(username, session_id, None, [stack_id])
 
         if err:
@@ -55,7 +55,7 @@ class Pull(Command):
 
                     app['hosts_table'][uid] = comp['name']
 
-                    log_str = '>Found instance {0}'.format(comp['name'])
+                    log_str = '> found instance {0}'.format(comp['name'])
 
                     if comp['state']:
                         log_str+=': has %s state(s)' % len(comp['state'])
@@ -79,10 +79,10 @@ class Pull(Command):
             with open(stack_file,'w+') as f:
                 f.writelines( stack_yaml )
 
-            self.log.debug( '\nDocker state info' )
+            self.log.debug( '\n> docker state info' )
             self.log.debug( '==============================================================' )
             self.log.debug( stack_yaml )
             self.log.debug( '==============================================================' )
-            self.app.stdout.write( '> %s is saved to %s\n' % (stack_id, stack_file) )
+            self.app.stdout.write( '%s is saved to %s\n' % (stack_id, stack_file) )
 
             print 'Done!'
