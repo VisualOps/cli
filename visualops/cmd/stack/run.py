@@ -117,8 +117,8 @@ class Run(Command):
             if not boot2docker.gen_config(config, config["appname"]):
                 utils.error("Unable to generate boot2docker configuration")
                 return False
-#            boot2docker.delete(config, config["appname"])
-#            boot2docker.init(config, config["appname"])
+            boot2docker.delete(config, config["appname"])
+            boot2docker.init(config, config["appname"])
             boot2docker.mount(config["appname"], [{
                 "volume": "visops_root",
                 "hostpath": "/",

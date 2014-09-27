@@ -14,27 +14,28 @@ from visualops.utils import utils
 # Check if boot2docker VM is running
 def running(config, appid, verbose=False):
     try:
+        env = os.environ.copy()
+        env.update({"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)})
         out, err = subprocess.Popen(["boot2docker","status"],
-                                    env=os.environ.copy().update(
-                                        {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
-                                    ),
+                                    env=env,
                                     stdout=PIPE,stderr=PIPE).communicate()
     except Exception:
         return False
     if not re.search("running",out): return False
-    print "Boot2docker VM ip: %s\nTo use the docker client in a terminal, set the following environment variable: %s"%(
-        ip(config,appid),
-        shellinit(config,appid)
-    )
+    if verbose:
+        print "Boot2docker VM ip: %s\nTo use the docker client in a terminal, set the following environment variable:\n\n%s"%(
+            ip(config,appid),
+            shellinit(config,appid)
+        )
     return True
 
 # Get boot2docker VM IP
 def ip(config, appid):
     try:
+        env = os.environ.copy()
+        env.update({"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)})
         out, err = subprocess.Popen(["boot2docker","ip"],
-                                    env=os.environ.copy().update(
-                                        {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
-                                    ),
+                                    env=env,
                                     stdout=PIPE,stderr=PIPE).communicate()
     except Exception:
         return "127.0.0.1"
@@ -42,25 +43,26 @@ def ip(config, appid):
 
 # Run boot2docker VM
 def run(config, appid, verbose=True):
-    if running(config, appid) is not True:
+    if running(config, appid, verbose) is not True:
         try:
+            env = os.environ.copy()
+            env.update({"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)})
             out, err = subprocess.Popen(["boot2docker","start"],
-                                        env=os.environ.copy().update(
-                                            {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
-                                        ),
+                                        env=env,
                                         stdout=PIPE,stderr=PIPE).communicate()
+            return running(config, appid, verbose)
         except Exception:
             pass
-    return running(config, appid, verbose)
+    return running(config, appid, verbose=False)
 
 # Stop boot2docker VM
 def stop(config, appid):
     if running(config, appid) is True:
         try:
+            env = os.environ.copy()
+            env.update({"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)})
             out, err = subprocess.Popen(["boot2docker","stop"],
-                                        env=os.environ.copy().update(
-                                            {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
-                                        ),
+                                        env=env,
                                         stdout=PIPE,stderr=PIPE).communicate()
         except Exception:
             pass
@@ -69,10 +71,10 @@ def stop(config, appid):
 # Delete boot2docker VM
 def delete(config, appid):
     try:
+        env = os.environ.copy()
+        env.update({"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)})
         out, err = subprocess.Popen(["boot2docker","destroy"],
-                                    env=os.environ.copy().update(
-                                        {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
-                                    ),
+                                    env=env,
                                     stdout=PIPE,stderr=PIPE).communicate()
     except Exception:
         return False
@@ -82,10 +84,10 @@ def delete(config, appid):
 def init(config, appid):
     delete(config,appid)
     try:
+        env = os.environ.copy()
+        env.update({"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)})
         out, err = subprocess.Popen(["boot2docker","init"],
-                                    env=os.environ.copy().update(
-                                        {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
-                                    ),
+                                    env=env,
                                     stdout=PIPE,stderr=PIPE).communicate()
     except Exception as e:
         return False
@@ -97,10 +99,10 @@ def init(config, appid):
 # Get boot2docker shell init
 def shellinit(config, appid):
     try:
+        env = os.environ.copy()
+        env.update({"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)})
         out, err = subprocess.Popen(["boot2docker","shellinit"],
-                                    env=os.environ.copy().update(
-                                        {"BOOT2DOCKER_PROFILE":os.path.join(config["dirs"]["boot2docker"],"%s.cfg"%appid)}
-                                    ),
+                                    env=env,
                                     stdout=PIPE,stderr=PIPE).communicate()
     except Exception:
         return ""
