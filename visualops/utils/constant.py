@@ -1,83 +1,82 @@
 
-# AppService Error Code
+#IDE URL
+IDE_URL = 'https://ide.mc3.io/ops/'
 
+# AppService Error Code
 ERROR = {
     #legacy
-    "E_OK"        : 0,
-    "E_NONE"      : 1,
-    "E_INVALID"   : 2,
-    "E_FULL"      : 3,
-    "E_EXIST"     : 4,
-    "E_EXTERNAL"  : 5,
-    "E_FAILED"    : 6,
-    "E_BUSY"      : 7,
-    "E_NORSC"     : 8,
-    "E_NOPERM"    : 9,
-    "E_NOSTOP"    : 10,
-    "E_NOSTART"   : 11,
-    "E_ERROR"     : 12,
-    "E_LEFTOVER"  : 13,
-    "E_TIMEOUT"   : 14,
-    "E_UNKNOWN"   : 15,
-    "E_CONN"      : 16,
-    "E_EXPIRED"   : 17,
-    "E_PARAMS"    : 18,
-    "E_SESSION"   : 19,
-    "E_END"       : 20,
-    "E_BLOCKED_USER"   : 21,
-    "E_IDEM"      : 22,
-    "E_REMOVED_USER"   : 23,
+    0  : 'E_OK',
+    1  : 'E_NONE',
+    2  : 'E_INVALID',
+    3  : 'E_FULL',
+    4  : 'E_EXIST',
+    5  : 'E_EXTERNAL',
+    6  : 'E_FAILED',
+    7  : 'E_BUSY',
+    8  : 'E_NORSC',
+    9  : 'E_NOPERM',
+    10 : 'E_NOSTOP',
+    11 : 'E_NOSTART',
+    12 : 'E_ERROR',
+    13 : 'E_LEFTOVER',
+    14 : 'E_TIMEOUT',
+    15 : 'E_UNKNOWN',
+    16 : 'E_CONN',
+    17 : 'E_EXPIRED',
+    18 : 'E_PARAMS',
+    19 : 'E_SESSION',
+    20 : 'E_END',
+    21 : 'E_BLOCKED_USER',
+    22 : 'E_IDEM',
+    23 : 'E_REMOVED_USER',
 
-    # common:  1*
-    "GlobalErrorInit"       : 100, # Sorry, we are suffering from some technical issue, please try again later
-    "GlobalErrorApi"        : 101, # Invalid API Parameters
-    "GlobalErrorSession"    : 102, # Invalid session, please login again
-    "GlobalErrorDb"         : 103, # DB operation failed
-    "GlobalErrorRegion"     : 104, # Region mismatched
-    "GlobalErrorId"         : 105, # Id mismatched
-    "GlobalErrorUsername"   : 106, # Username mismatched
-    "GlobalErrorIntercom"   : 107, # Failed to generate intercom secret hash
-    "GlobalErrorUnknown"    : 109, #
-    "UserInvalidUser"       : 110, # Invalid username or password
-    "UserInvalidUsername"   : 111, # Invalid username {0}
-    "UserErrorUser"         : 112, # user {0} missing {1}
-    "UserBlockedUser"       : 113, # User {0} blocked
-    "UserRemovedUser"       : 114, # User {0} removed
-    "UserNoUser"            : 115, # User {0} not existed
-    "UserInvalidEmail"      : 116, # Invalid email {0}
-    "SessionInvalidSessio"  : 120, # Invalid session {0}/{1}
-    "SessionInvalidId"      : 121, # Invalid session {0}
-    "SessionFailedCreate"   : 122, # Can not create session {0} - {1}
-    "SessionFailedUpdate"   : 123, # Can not update session {0} - {1}
-    "SessionFailedDelete"   : 124, # Can not delete session {0} - {1}
-    "SessionFailedGet"      : 125, # Can not get session {0}
-    "SessionErrorSession"   : 126, # Mismatched username {0} and session id {1}
-    "SessionNotConnected"   : 127, # Cannot connect with session manager
-    "RequestErrorRequest"   : 130, # Cannot submit request
-    "RequestInvalidId"      : 131, # Invalid request id {0}
-    "RequestNoPending"      : 132, # Request {0} is no longer pending
-    "RequestErrorEmail"     : 133, # Submit email request failed
-    "RequestOnProcess"      : 134, # Request is processing and please submit request later
-    "IdConstrain"           : 134, # Request is processing and please submit request later
-
-    # forge:  2*
-    "AppInvalidFormat"      : 210, # Missing parameter {0}
-    "AppNotStop"            : 211, # Invalid parameter: stack is not stoppable but the lease action is set to Stop
-    "AppBeingOperated"      : 212, # App {0} is being operated
-    "AppNotRename"          : 213, # Can not rename app {0}
-    "AppInvalidId"          : 214, # Invalid app id {0}
-    "AppInvalidState"       : 214, # Invalid app state {0}
-    "AppIsRunning"          : 215, # {0} is currently running
-    "AppIsStopped"          : 216, # {0} is currently stopped
-    "AppNotStoppable"       : 217, # {0} is not stoppable
-    "StackInvalidFormat"    : 250, # Missing parameter {0}
-    "StackNotStop"          : 251, # Invalid parameter: stack is not stoppable but the lease action is set to Stop
-    "StackRepeatedStack"    : 252, # Repeated stack {0}
-    "StackInvalidId"        : 253, # Invalid stack id {0}
-    "StackIsRemoved"        : 254, # Stack {0} is already removed
-    "StackIsDisabled"       : 255, # Stack {0} is already disabled
-    "StackVerifyFailed"     : 256, # Verify stack {0} exception {1}
-    "StateErrorModule"      : 260, # The version of this stack is no longer supported, please contact with our support for details
+    100 : 'Sorry, we are suffering from some technical issue, please try again later'  ,   # GlobalErrorInit
+    101 : 'Invalid API Parameters'  ,                   # GlobalErrorApi
+    102 : 'Invalid session, please login again'  ,      # GlobalErrorSession
+    103 : 'DB operation failed'  ,                      # GlobalErrorDb
+    104 : 'Region mismatched'  ,                        # GlobalErrorRegion
+    105 : 'Id mismatched'  ,                            # GlobalErrorId
+    106 : 'Username mismatched'  ,                      # GlobalErrorUsername
+    107 : 'Failed to generate intercom secret hash'  ,  # GlobalErrorIntercom
+    109 : 'Unknown Error'  ,                            # GlobalErrorUnknown
+    110 : 'Invalid username or password' ,      # UserInvalidUser
+    111 : 'Invalid username' ,                  # UserInvalidUsername
+    112 : 'User missing' ,                      # UserErrorUser
+    113 : 'User has been blocked'  ,            # UserBlockedUser
+    114 : 'User has been removed'  ,            # UserRemovedUser
+    115 : 'User does not existed'  ,            # UserNoUser
+    116 : 'Invalid email' ,                     # UserInvalidEmail
+    120 : 'Invalid session' ,                       # SessionInvalidSession
+    121 : 'Invalid session' ,                       # SessionInvalidId
+    122 : 'Can not create session' ,                # SessionFailedCreate
+    123 : 'Session is invalid, no need logout' ,    # SessionFailedUpdate
+    124 : 'Can not delete session' ,                # SessionFailedDelete
+    125 : 'Can not get session' ,                   # SessionFailedGet
+    126 : 'Mismatched username and session id' ,    # SessionErrorSession
+    127 : 'Cannot connect with session manager'  ,  # SessionNotConnected
+    130 : 'Cannot submit request'  ,                                    # RequestErrorRequest
+    131 : 'Invalid request id' ,                                        # RequestInvalidId
+    132 : 'Request is no longer pending'  ,                             # RequestNoPending
+    133 : 'Submit email request failed'  ,                              # RequestErrorEmail
+    134 : 'Request is processing and please submit request later'  ,    # RequestOnProcess
+    134 : 'Request is processing and please submit request later'  ,    # IdConstrain
+    210 : 'Missing parameter' ,                                                             # AppInvalidFormat
+    211 : 'Invalid parameter: stack is not stoppable but the lease action is set to Stop' , # AppNotStop
+    212 : 'App is being operated'  ,                                                        # AppBeingOperated
+    213 : 'Can not rename app' ,                                                            # AppNotRename
+    214 : 'Invalid app id' ,                                                                # AppInvalidId
+    214 : 'Invalid app state' ,                                                             # AppInvalidState
+    215 : 'App is currently running'  ,                                                     # AppIsRunning
+    216 : 'App is currently stopped'  ,                                                     # AppIsStopped
+    217 : 'App is not stoppable'  ,                                                         # AppNotStoppable
+    250 : 'Missing parameter' ,                                                                             # StackInvalidFormat
+    251 : 'Invalid parameter: stack is not stoppable but the lease action is set to Stop'  ,                # StackNotStop
+    252 : 'Repeated stack' ,                                                                                # StackRepeatedStack
+    253 : 'Invalid stack id' ,                                                                              # StackInvalidId
+    254 : 'Stack has already removed'  ,                                                                    # StackIsRemoved
+    255 : 'Stack has already disabled'  ,                                                                   # StackIsDisabled
+    256 : 'Verify stack exception' ,                                                                        # StackVerifyFailed
+    260 : 'The version of this stack is no longer supported, please contact with our support for details' , # StateErrorModule
 
 }
 

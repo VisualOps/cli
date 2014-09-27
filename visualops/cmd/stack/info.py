@@ -26,10 +26,8 @@ class Info(ShowOne):
         (err, result) = rpc.stack_info(username, session_id, None, [ stack_id ])
 
         if err:
-            if err == constant.ERROR['GlobalErrorSession']:
-                raise RuntimeError('Your Session is invalid, please re-login!')
-            else:
-                raise RuntimeError('get stack info failed:( ({0})'.format(err))
+            print('Get stack info failed')
+            utils.hanlde_error(err,result)
         else:
             self.log.debug('>Get {0} stack(s) info'.format(len(result)))
 

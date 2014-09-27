@@ -30,10 +30,8 @@ class Pull(Command):
         (err, result) = rpc.stack_info(username, session_id, None, [stack_id])
 
         if err:
-            if err == constant.ERROR['GlobalErrorSession']:
-                raise RuntimeError('Your Session is invalid, please re-login!')
-            else:
-                raise RuntimeError('pull stack failed:( ({0})'.format(err))
+            print('Pull stack failed')
+            utils.hanlde_error(err,result)
         else:
             if len(result) == 0:
                 self.app.stdout.write('The stack does not exist\n')

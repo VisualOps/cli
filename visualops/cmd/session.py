@@ -1,8 +1,6 @@
 import logging
 import getpass
-from visualops.utils import utils
-from visualops.utils import rpc
-from visualops.utils import constant
+from visualops.utils import utils,rpc
 from cliff.command import Command
 
 class Login(Command):
@@ -12,7 +10,7 @@ class Login(Command):
 
     def get_parser(self, prog_name):
         parser = super(Login, self).get_parser(prog_name)
-        parser.add_argument('-u', action='store', dest='username', nargs='?', default='', help='login username')
+        parser.add_argument('-u', action='store', dest='username', nargs='?', default='', help='VisualOps IDE login username')
         return parser
 
     def take_action(self, parsed_args):
@@ -21,29 +19,24 @@ class Login(Command):
         if not username:
             username = raw_input('Enter usename or email:')
         if not username:
-            raise RuntimeError('must input a username')
+            raise RuntimeError('Must input a username')
 
         passwd = getpass.getpass('Your Password:')
         if not passwd:
-            raise RuntimeError('must input a password')
+            raise RuntimeError('Must input a password')
 
         # Login
         (err, result) = rpc.login(username, passwd)
 
         if err:
-            if err == constant.ERROR['UserInvalidUser']:
-                raise RuntimeError('Invalid username or password'.format(err))
-            elif err == constant.ERROR['UserNoUser']:
-                raise RuntimeError('User {0} not existed'.format(username))
-            else:
-                raise RuntimeError('login failed:( ({0})'.format(err))
+            utils.hanlde_error(err,result)
         else:
 
-            print('\nSucceeded!')
+            print('\nLogin Success!')
             # Save session
             self.log.debug('>Start save session...')
             utils.save_session(result)
-            self.log.debug('>Finish session succeed')
+            self.log.debug('>Save session succeed')
 
 
 class Logout(Command):
@@ -63,9 +56,6 @@ class Logout(Command):
         (err, result) = rpc.logout(username, session_id)
 
         if err:
-            if err == constant.ERROR['GlobalErrorSession']:
-                raise RuntimeError('Your Session is invalid, no need logout!')
-            else:
-                raise RuntimeError('logout failed:( ({0})'.format(err))
+            utils.hanlde_error(err,result)
         else:
-            print('\nSucceeded!')
+            print('\nLogout Success!')

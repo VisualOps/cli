@@ -31,10 +31,7 @@ class Clone(Command):
         (err, result) = rpc.app_info(username, session_id, None, [app_id])
 
         if err:
-            if err == constant.ERROR['GlobalErrorSession']:
-                raise RuntimeError('Your Session is invalid, please re-login!')
-            else:
-                raise RuntimeError('pull app failed:( ({0})'.format(err))
+            utils.hanlde_error(err,result)
         else:
             if len(result) == 0:
                 self.app.stdout.write('The app does not exist\n')

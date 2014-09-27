@@ -31,7 +31,8 @@ class List(Lister):
             (err, result) = rpc.app_list(username, session_id, parsed_args.region_name)
 
             if err:
-                raise RuntimeError('get app list failed:( ({0})'.format(err))
+                print('Get app list failed')
+                utils.hanlde_error(err,result)
             else:
                 self.app.stdout.write('get {0} app list succeed!\n'.format(len(result)))
                 return (('Id', 'Name', 'Region', 'State'),

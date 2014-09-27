@@ -7,8 +7,10 @@ import ConfigParser
 import yaml
 import urllib2
 import contextlib
+import logging
 from datetime import date
 from prettytable import PrettyTable
+from visualops.utils import constant
 
 DEFAULT_YEAR  = date.today().year
 PROGRESS_RE = re.compile(r'\((\s?\d+)%\)')
@@ -51,6 +53,16 @@ def load_session():
         print('load session failed, try login again!')
         return (None, None)
 
+#Handle AppService Error
+def hanlde_error(err, result):
+    if err:
+        err_msg = constant.ERROR[err]
+        if err_msg:
+            log = logging.getLogger(__name__)
+            log.debug('>AppService return code : %s' % err)
+            raise RuntimeError(err_msg)
+        else:
+            raise RuntimeError('Uncaught exception (%s) %s' % (err,result))
 
 class Progress(object):
     def __init__(self, filename=None):

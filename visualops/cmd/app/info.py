@@ -49,7 +49,8 @@ class Info(ShowOne):
             (err, result) = rpc.app_info(username, session_id, None, [app_id])
 
             if err:
-                raise RuntimeError('get app info failed:( ({0})'.format(err))
+                print('Get app info failed')
+                utils.hanlde_error(err,result)
             else:
                 self.log.debug('>Get {0} app(s) info'.format(len(result)))
 
