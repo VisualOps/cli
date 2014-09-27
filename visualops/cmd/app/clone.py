@@ -118,22 +118,26 @@ class Clone(Command):
             if not os.path.exists(config["dirs"][d]):
                 os.makedirs(config["dirs"][d])
         if boot2docker.has():
+            print "Starting Boot2docker ... (this may take a while)"
             if not os.path.isfile(os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso")):
                 utils.download(config["boot2docker_iso"],os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso"))
 
             if not boot2docker.gen_config(config, config["appname"]):
                 utils.error("Unable to generate boot2docker configuration")
                 return False
-            boot2docker.delete(config, config["appname"])
-            boot2docker.init(config, config["appname"])
+#            boot2docker.delete(config, config["appname"])
+#            boot2docker.init(config, config["appname"])
             boot2docker.mount(config["appname"], [{
-                "volume": "root",
+                "volume": "visops_root",
                 "hostpath": "/",
             },{
-                "volume": "containers",
+                "volume": "visops_containers",
                 "hostpath": config["dirs"]["containers"],
             }])
-            boot2docker.run(config, config["appname"])
+            if boot2docker.run(config, config["appname"]):
+                print "Boot2docker successfully running!"
+            else:
+                utils.error("Unable to run Boot2docker.")
             config["chroot"] = os.path.join("/mnt/host",config.get("chroot",""))
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,config["appname"]))
         config["hosts_table"] = app_dict.get("hosts_table",{})
@@ -151,5 +155,5 @@ class Clone(Command):
         app = {}
         for hostname in actions:
             for container in actions[hostname]:
-                app.update(config, actions[hostname][container])
+                app.update(dockervisops.deploy(config, actions[hostname][container]))
         dockervisops.generate_hosts(config, app)
