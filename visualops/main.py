@@ -18,16 +18,16 @@ class VisualOpsCLIApp(App):
             )
 
     def initialize_app(self, argv):
-        self.log.debug('initialize_app')
+        self.log.debug('> initialize_app')
         self.command_manager.add_command('complete', CompleteCommand)
 
     def prepare_to_run_command(self, cmd):
-        self.log.debug('prepare_to_run_command %s', cmd.__class__.__name__)
+        self.log.debug('> prepare_to_run_command %s', cmd.__class__.__name__)
 
     def clean_up(self, cmd, result, err):
-        self.log.debug('clean_up %s', cmd.__class__.__name__)
+        self.log.debug('> clean_up %s', cmd.__class__.__name__)
         if err:
-            self.log.debug('got an error: %s', err)
+            self.log.debug('> got an error: %s', err)
 
 
 def main(argv=sys.argv[1:]):

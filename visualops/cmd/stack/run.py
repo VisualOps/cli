@@ -2,7 +2,7 @@ import logging
 import os
 import yaml
 import json
-import uuid
+import base64
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,db
 
@@ -34,11 +34,11 @@ class Run(Command):
             return
 
         try:
-            self.log.debug( ">Load data from %s" % stack_file )
+            self.log.debug( "> load data from %s" % stack_file )
             stream = open(stack_file, 'r')
             app = yaml.load(stream)
         except Exception:
-            raise RuntimeError('Load yaml error!')
+            raise RuntimeError('load yaml error!')
 
         if not app:
             raise RuntimeError('stack json is invalid!')
@@ -86,11 +86,17 @@ class Run(Command):
 #            },
 #        }
 
-        config = utils.gen_config(app.get("name","default-app"))
-        self.run_stack(config, app)
 
-        #insert app to local db
-        db.create_app(config["appname"], config["appname"], stack_id, app['region'])
+        config = utils.gen_config(app.get("name","default-app"))
+
+        try:
+            #insert app to local db
+            db.create_app( config["appname"], config["appname"], stack_id, app['region'], base64.b64encode(utils.dict2str(app)) )
+
+            self.run_stack(config, app)
+        except Exception,e:
+            raise RuntimeError('Stack run failed! %s' % e)
+            db.delete_app( config["appname"] )
 
 
     # Run stack

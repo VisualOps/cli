@@ -1,4 +1,5 @@
 import logging
+import json
 
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,db
@@ -16,19 +17,27 @@ class Terminate(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.app.stdout.write('app terminate TO-DO!\n')
 
         app_id = parsed_args.app_id
-        appname = ""# TODO jimmy
-        app = {}#TODO jimmy
+
+        #get app data from local db
+        (appname,app) = db.get_app_data( app_id )
+        if not (appname and app):
+            raise RuntimeError('Can not find local app {0}'.format(app_id))
+
+        self.log.debug( '==============================================================' )
+        self.log.debug("> found app %s in local db" % appname)
+        self.log.debug("> app_data")
+        self.log.debug( json.dumps(app, indent=4) )
+        self.log.debug( '==============================================================' )
 
         config = utils.gen_config(appname)
 
         if parsed_args.terminate_app_local:
             self.terminate_app(config, appname, app)
-            print 'terminate local app ...'
+            print 'Terminate local app ...'
         else:
-            print 'terminate remote app ...(not support yet)'
+            print 'Terminate remote app ...(not support yet, please try -l)'
             return
 
         #save app state
@@ -49,5 +58,5 @@ class Terminate(Command):
                             utils.error("Unable to remove container %s"%container)
         if boot2docker.has():
             boot2docker.delete(config, appname)
-        print "app %s terminated."%appname
+        print "App %s terminated."%appname
 

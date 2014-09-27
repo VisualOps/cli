@@ -7,7 +7,10 @@ import ConfigParser
 import yaml
 import urllib2
 import contextlib
+import logging
 from datetime import date
+from prettytable import PrettyTable
+from visualops.utils import constant
 
 DEFAULT_YEAR  = date.today().year
 PROGRESS_RE = re.compile(r'\((\s?\d+)%\)')
@@ -50,6 +53,16 @@ def load_session():
         print('load session failed, try login again!')
         return (None, None)
 
+#Handle AppService Error
+def hanlde_error(err, result):
+    if err:
+        err_msg = constant.ERROR[err]
+        if err_msg:
+            log = logging.getLogger(__name__)
+            log.debug('>AppService return code : %s' % err)
+            raise RuntimeError(err_msg)
+        else:
+            raise RuntimeError('Uncaught exception (%s) %s' % (err,result))
 
 class Progress(object):
     def __init__(self, filename=None):
@@ -116,6 +129,21 @@ def yaml2dict(data):
     rlt = yaml.load(data)
     return rlt
 
+def dict2str(data):
+    return str(data)
+
+def str2dict(str):
+    return eval(str)
+
+# Pretty Print table in tabular format
+def print_prettytable(title,rows):
+    x = PrettyTable(title)
+    x.padding_width = 1 # One space between column edges and contents (default)
+    for col in title:
+        x.align[col] = "l"
+    for row in rows:
+        x.add_row(row)
+    return x
 
 # Downlaod file with progress bar
 def download(url, file_name=None, verbose=True):

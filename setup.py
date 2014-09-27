@@ -42,6 +42,8 @@ setup(
             'app reboot    = visualops.cmd.app.reboot:Reboot',
             'app clone     = visualops.cmd.app.clone:Clone',
             'app terminate = visualops.cmd.app.terminate:Terminate',
+
+            'db reset      = visualops.cmd.db.reset:Reset',
         ],
     },
 )
