@@ -6,6 +6,7 @@ import sqlite3
 import os
 import datetime
 import base64
+import logging
 from visualops.utils import utils,constant
 
 
@@ -133,18 +134,32 @@ def terminate_app(app_id):
     app_update_state(app_id, 'Terminated')
 
 
-def get_app_list():
+def get_app_list(region_name=None,filter_name=None):
     """
-    get app list
+    get local app list
     """
     try:
         conn = get_conn()
         c = conn.cursor()
-        c.execute("SELECT name,source_id,region,state,create_at,change_at FROM app ")
+
+        cond = []
+        where_clause = ""
+        if region_name:
+            cond.append( "region='{0}' ".format(region_name) )
+        if filter_name:
+            cond.append( "lower(name) like '%{0}%' ".format(filter_name.lower()) )
+        if len(cond) > 0:
+            where_clause = 'where ' + 'and '.join( cond )
+
+        sqlcmd = "SELECT name,source_id,region,state,create_at,change_at FROM app %s " % where_clause
+        log = logging.getLogger(__name__)
+        log.debug('> sql : %s' % sqlcmd)
+
+        c.execute(sqlcmd)
         rlt = c.fetchall()
         conn.commit()
         conn.close()
-        #print '[app_list]list app succeed!'
+
         return rlt
     except Exception,e:
         raise RuntimeError('list app failed! %s ' % e)

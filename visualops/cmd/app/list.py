@@ -16,10 +16,12 @@ class List(Lister):
 
     def take_action(self, parsed_args):
 
+        region_name = parsed_args.region_name
+        filter_name = parsed_args.filter_name
 
         if parsed_args.list_app_local:
             print 'List local app....'
-            rlt = db.get_app_list()
+            rlt = db.get_app_list(region_name, filter_name)
             return (( 'Name', 'Source Id', 'Region', 'State', 'Create At', 'Change At'), rlt)
 
         else:
@@ -28,13 +30,13 @@ class List(Lister):
             (username, session_id) = utils.load_session()
 
             # get app list
-            (err, result) = rpc.app_list(username, session_id, parsed_args.region_name)
+            (err, result) = rpc.app_list(username, session_id, region_name)
 
             if err:
                 print('Get app list failed')
                 utils.hanlde_error(err,result)
             else:
-                self.app.stdout.write('get {0} app list succeed!\n'.format(len(result)))
+                self.log.debug('> get {0} app list succeed!'.format(len(result)))
                 return (('Id', 'Name', 'Region', 'State'),
-                    ((app["id"], app["name"], app["region"], app["state"]) for app in result if (parsed_args.filter_name.lower() in app['name'].lower() and app["state"] in ["Running"]) )
+                    ((app["id"], app["name"], app["region"], app["state"]) for app in result if (filter_name.lower() in app['name'].lower() and app["state"] in ["Running"]) )
                 )
