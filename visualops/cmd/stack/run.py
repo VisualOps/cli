@@ -91,9 +91,9 @@ class Run(Command):
 
         try:
             #insert app to local db
-            db.create_app( config["appname"], config["appname"], stack_id, app['region'], base64.b64encode(utils.dict2str(app)) )
-
             self.run_stack(config, app)
+            app["name"] = config["appname"]
+            db.create_app( config["appname"], config["appname"], stack_id, app['region'], base64.b64encode(utils.dict2str(app)) )
         except Exception,e:
             raise RuntimeError('Stack run failed! %s' % e)
             db.delete_app( config["appname"] )

@@ -1214,6 +1214,7 @@ def deploy(config, actions):
             if failure:
                 break
     app = {}
+    db.delete_app( config["appname"] )
     for container in out.get("running",[]):
         name = container.get("Name").replace("/","")
         print "--> Container successfully started %s."%name

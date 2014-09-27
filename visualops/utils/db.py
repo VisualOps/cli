@@ -100,7 +100,7 @@ def create_app(app_id, app_name, source_id, region, app_data):
 
 def delete_app(app_id):
     """
-    delete app from local db
+    delete app info from local db
     """
     try:
         conn = get_conn()
@@ -108,9 +108,9 @@ def delete_app(app_id):
         c.execute("DELETE FROM container WHERE app_id='{0}'".format(app_id))
         c.execute("DELETE FROM app WHERE id='{0}'".format(app_id))
         conn.commit()
-        print 'delete app %s succeed!' % app_id
+        print 'clear old app %s in db succeed!' % app_id
     except Exception, e:
-        raise RuntimeError('delete app %s failed! %s' % (app_id,e))    
+        raise RuntimeError('clear old app %s in db failed! %s' % (app_id,e))
 
 
 def stop_app(app_id):
