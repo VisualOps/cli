@@ -114,10 +114,10 @@ class Run(Command):
 #            boot2docker.delete(config, config["appname"])
 #            boot2docker.init(config, config["appname"])
             boot2docker.mount(config["appname"], [{
-                "volume": "root",
+                "volume": "visops_root",
                 "hostpath": "/",
             },{
-                "volume": "containers",
+                "volume": "visops_containers",
                 "hostpath": config["dirs"]["containers"],
             }])
             if boot2docker.run(config, config["appname"]):
