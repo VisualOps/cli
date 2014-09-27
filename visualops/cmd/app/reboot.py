@@ -37,7 +37,7 @@ class Reboot(Command):
             self.reboot_app(config, appname, app)
             print 'Reboot local app ...'
         else:
-            print 'Reboot remote app ...(not support yet)'
+            print 'Reboot remote app ...(not support yet, please try -l)'
             return
 
         #save app state

@@ -37,7 +37,7 @@ class Terminate(Command):
             self.terminate_app(config, appname, app)
             print 'Terminate local app ...'
         else:
-            print 'Terminate remote app ...(not support yet)'
+            print 'Terminate remote app ...(not support yet, please try -l)'
             return
 
         #save app state

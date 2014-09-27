@@ -84,19 +84,7 @@ pudb.set_trace()
 =====================================================
 
 ##1.generate `bash_complete script`
-(.venv)$ visualops complete
-
-`bash_complete script` sample like:
-<pre>
-_visualops()
-{
-...
-}
-complete -F _visualops visualops
-</pre>
-
-##create bash_complete script for visualops
-put the `bash_complete script` to `/etc/bash_completion.d/visualops`
+(.venv)$ visualops complete > /etc/bash_completion.d/visualops
 
 ##use auto-complete
 press `tab` twice when input command

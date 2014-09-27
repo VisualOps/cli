@@ -37,7 +37,7 @@ class Start(Command):
             self.start_app(config, appname, app)
             print 'Start local app ...'
         else:
-            print 'Start remote app ...(not support yet)'
+            print 'Start remote app ...(not support yet, please try -l)'
             return
 
         #save app state

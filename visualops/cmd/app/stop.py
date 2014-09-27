@@ -37,7 +37,7 @@ class Stop(Command):
             self.stop_app(config, appname, app)
             print 'Stopping local app ...'
         else:
-            print 'Stopping remote app ...(not support yet)'
+            print 'Stopping remote app ...(not support yet, please try -l)'
             return
 
         #save app state

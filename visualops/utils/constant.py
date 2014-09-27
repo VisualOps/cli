@@ -1,7 +1,9 @@
+import os
 
 #IDE URL
 IDE_URL = 'http://ide.mc3.io/ops/'
 API_URL = 'http://api.mc3.io'
+DB_FILE = os.path.expanduser("~/.visualops/db")
 
 # AppService Error Code
 ERROR = {

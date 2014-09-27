@@ -6,34 +6,45 @@ import sqlite3
 import os
 import datetime
 import base64
-from visualops.utils import utils
+from visualops.utils import utils,constant
 
+
+def init_db():
+    try:
+        if not os.path.isfile( constant.DB_FILE ):
+            conn = sqlite3.connect( constant.DB_FILE )
+            c = conn.cursor()
+            c.execute("""Create  TABLE app(
+                        id varchar(15)
+                        ,name varchar(50)
+                        ,source_id varchar(15)
+                        ,region varchar(25)
+                        ,state varchar(15)
+                        ,create_at varchar(15)
+                        ,change_at varchar(20)
+                        ,app_data ntext
+                        , Primary Key(id)
+                        );""")
+            c.execute("""Create  TABLE container(
+                        id varchar(15)
+                        ,name varchar(50)
+                        ,app_id varchar(15)
+                        , Primary Key(id)
+                        );""")
+            print "init db file %s succeed! " % constant.DB_FILE
+            conn.close()
+    except Exception,e:
+        raise RuntimeError( 'init local db failed! %s' % e )
+
+def reset_db():
+    os.remove( constant.DB_FILE )
+    init_db()
 
 def get_conn():
-    db_file = os.path.expanduser("~/.visualops/db")
-    if not os.path.isfile( db_file ):
-        conn = sqlite3.connect( db_file )
-        c = conn.cursor()
-        c.execute("""Create  TABLE app(
-                    id varchar(15)
-                    ,name varchar(50)
-                    ,source_id varchar(15)
-                    ,region varchar(25)
-                    ,state varchar(15)
-                    ,create_at varchar(15)
-                    ,change_at varchar(20)
-                    ,app_data ntext
-                    , Primary Key(id)   
-                    );""")
-        c.execute("""Create  TABLE container(
-                    id varchar(15)
-                    ,name varchar(50)
-                    ,app_id varchar(15)
-                    , Primary Key(id)
-                    );""")
-        print "init db file %s succeed! " % db_file
-    else:
-        conn = sqlite3.connect( db_file )
+    if not os.path.isfile( constant.DB_FILE ):
+        init_db()
+
+    conn = sqlite3.connect( constant.DB_FILE )
     return conn
 
 
