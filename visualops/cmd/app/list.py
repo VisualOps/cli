@@ -38,5 +38,5 @@ class List(Lister):
             else:
                 self.log.debug('> get {0} app list succeed!'.format(len(result)))
                 return (('Id', 'Name', 'Region', 'State'),
-                    ((app["id"], app["name"], app["region"], app["state"]) for app in result if (filter_name.lower() in app['name'].lower() and app["state"] in ["Running"]) )
+                    ((app["id"], app["name"], app["region"], app["state"]) for app in result if (filter_name.lower() in app['name'].lower() and app["state"] in ["Running","Stopped"]) )
                 )
