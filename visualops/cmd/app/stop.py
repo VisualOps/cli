@@ -52,15 +52,17 @@ class Stop(Command):
             for state in app_dict["hosts"][hostname]:
                 if state == "linux.docker.deploy":
                     for container in app_dict["hosts"][hostname][state]:
-                        container = "%s-%s-%s"%(appname,hostname,container)
-                        containers = ([container]
-                                      if not app_dict["hosts"][hostname][state].get("count")
-                                      else ["%s_%s"%(container,i) for i in range(1,int(app_dict["hosts"][hostname][state]["count"]))])
-                        for container_name in containers:
-                            if dockervisops.stop(config, container_name) is True:
-                                print "Container %s stopped"%container_name
+                        container_name = "%s-%s-%s"%(appname,hostname,container)
+                        containers = ([container_name]
+                                      if not app_dict["hosts"][hostname][state][container].get("count")
+                                      else ["%s_%s"%(container_name,i)
+                                            for i in range(1,int(app_dict["hosts"][hostname][state][container]["count"])+1)])
+                        print containers
+                        for cname in containers:
+                            if dockervisops.stop(config, cname) is True:
+                                print "Container %s stopped"%cname
                             else:
-                                utils.error("Unable to stop container %s"%container_name)
+                                utils.error("Unable to stop container %s"%cname)
         if boot2docker.has():
             boot2docker.stop(config, appname)
         print "App %s stopped."%appname

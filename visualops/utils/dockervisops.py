@@ -396,13 +396,14 @@ def stop(config, container, timeout=10, *args, **kwargs):
             if not is_running(config, dcontainer):
                 print "Container stopped."
                 return True
+            else:
+                return False
         else:
-#            print "Container not running."
             return True
     except Exception as e:
         err = e
-    utils.error("Unable to stop the container: %s"%err)
-    return False
+    utils.warning("Container not existing")
+    return True
 
 
 def kill(config, container, *args, **kwargs):

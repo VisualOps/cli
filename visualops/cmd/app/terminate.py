@@ -52,13 +52,15 @@ class Terminate(Command):
             for state in app_dict["hosts"][hostname]:
                 if state == "linux.docker.deploy":
                     for container in app_dict["hosts"][hostname][state]:
-                        container = "%s-%s-%s"%(appname,hostname,container)
-                        containers = ([container]
-                                      if not app_dict["hosts"][hostname][state].get("count")
-                                      else ["%s_%s"%(container,i) for i in range(1,int(app_dict["hosts"][hostname][state]["count"]))])
-                        for container_name in containers:
+                        container_name = "%s-%s-%s"%(appname,hostname,container)
+                        containers = ([container_name]
+                                      if not app_dict["hosts"][hostname][state][container].get("count")
+                                      else ["%s_%s"%(container_name,i)
+                                            for i in range(1,int(app_dict["hosts"][hostname][state][container]["count"])+1)])
+                        print containers
+                        for cname in containers:
                             if dockervisops.remove_container(config, container_name) is True:
-                                print "Container %s removed"%container_name
+                                print "Container %s removed"%cname
                             else:
                                 utils.error("Unable to remove container %s"%container_name)
         if boot2docker.has():
