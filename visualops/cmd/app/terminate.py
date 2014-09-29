@@ -59,10 +59,10 @@ class Terminate(Command):
                                             for i in range(1,int(app_dict["hosts"][hostname][state][container]["count"])+1)])
                         print containers
                         for cname in containers:
-                            if dockervisops.remove_container(config, container_name) is True:
+                            if dockervisops.remove_container(config, cname) is True:
                                 print "Container %s removed"%cname
                             else:
-                                utils.error("Unable to remove container %s"%container_name)
+                                utils.error("Unable to remove container %s"%cname)
         if boot2docker.has():
             boot2docker.delete(config, appname)
         print "App %s terminated."%appname
