@@ -18,7 +18,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    scripts=['bin/visualops'],
+    scripts=[],
     install_requires=['cliff','pyyaml','docker-py'],
     entry_points={
         'console_scripts': [
