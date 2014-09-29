@@ -93,8 +93,31 @@ press `tab` twice when input command
 
 [install docker]
 =====================================================
-## ubuntu 14.04 (http://beta-docs.docker.io/installation/ubuntulinux/)
-apt-get -y install docker.io
-ln -sf /usr/bin/docker.io /usr/local/bin/docker
-sed -i '$acomplete -F _docker docker' /etc/bash_completion.d/docker.io
-update-rc.d docker.io defaults
+## ubuntu 14.04 x86_64 (http://beta-docs.docker.io/installation/ubuntulinux/)
+$ sudo apt-get -y install docker.io
+$ sudo ln -sf /usr/bin/docker.io /usr/local/bin/docker
+$ sudo sed -i '$acomplete -F _docker docker' /etc/bash_completion.d/docker.io
+$ sudo update-rc.d docker.io defaults
+$ docker -v
+Docker version 1.0.1, build 990021a
+
+### upgrade to docker 1.2
+$ curl -sSL https://get.docker.io/ubuntu/ | sudo sh
+$ docker -v
+Docker version 1.2.0, build fa7b24f
+
+-----------------------------------------------------
+
+## centos 6.5 x86_64 (http://beta-docs.docker.io/installation/centos/)
+$ yum install http://ftp.riken.jp/Linux/fedora/epel/6/i386/epel-release-6-8.noarch.rpm
+$ yum install docker-io
+$ docker -v
+Docker version 1.1.2, build d84a070/1.1.2
+
+### upgrade to docker 1.2
+$ cd /usr/bin
+$ cp docker docker-1.1.2
+$ wget https://get.docker.io/builds/Linux/x86_64/docker-latest -O docker
+$ chmod +x docker
+$ docker -v
+Docker version 1.2.0, build fa7b24f
