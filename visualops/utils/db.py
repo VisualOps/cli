@@ -212,10 +212,13 @@ def get_app_data(app_id):
         result = c.fetchone()
         conn.close()
 
-        appname = result[1]
-        app_data = utils.str2dict( base64.b64decode(result[2]) )
+        if result:
+            appname = result[1]
+            app_data = utils.str2dict( base64.b64decode(result[2]) )
 
-        return (appname,app_data)
+            return (appname,app_data)
+        else:
+            return (None,None)
 
     except Exception,e:
         raise RuntimeError('get app data failed! %s' % e)
