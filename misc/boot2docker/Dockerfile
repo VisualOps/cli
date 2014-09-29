@@ -24,8 +24,8 @@ RUN echo "" >> $ROOTFS/etc/motd; \
     echo "" >> $ROOTFS/etc/motd
 
 # make mount permanent
-RUN echo '#!/bin/sh' >> $ROOTFS/etc/rc.d/vbox-guest-additions-permanent-mount; \
-    echo 'sudo modprobe vboxsf && sudo mkdir /mnt/host && sudo chown docker:staff /mnt/host && sudo mount -t vboxsf -o umask=0022,gid=$(id -g docker),uid=$(id -u docker) root /mnt/host' >> $ROOTFS/etc/rc.d/vbox-guest-additions-permanent-mount
+RUN echo '#!/bin/sh' > $ROOTFS/etc/rc.d/vbox-guest-additions-permanent-mount; \
+    echo 'sudo modprobe vboxsf && sudo mkdir /mnt/host && sudo chown docker:staff /mnt/host && sudo mount -t vboxsf -o umask=0022,gid=$(id -g docker),uid=$(id -u docker) root /mnt/host && sudo mkdir -p /var/lib/docker/containers && sudo mount -t vboxsf -o umask=0022,gid=$(id -g docker),uid=$(id -u docker) containers /var/lib/docker/containers' >> $ROOTFS/etc/rc.d/vbox-guest-additions-permanent-mount
 RUN chmod +x $ROOTFS/etc/rc.d/vbox-guest-additions-permanent-mount
 RUN echo '/etc/rc.d/vbox-guest-additions-permanent-mount' >> $ROOTFS/opt/bootsync.sh
 

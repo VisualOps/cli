@@ -84,19 +84,17 @@ pudb.set_trace()
 =====================================================
 
 ##1.generate `bash_complete script`
-(.venv)$ visualops complete
-
-`bash_complete script` sample like:
-<pre>
-_visualops()
-{
-...
-}
-complete -F _visualops visualops
-</pre>
-
-##create bash_complete script for visualops
-put the `bash_complete script` to `/etc/bash_completion.d/visualops`
+(.venv)$ visualops complete > /etc/bash_completion.d/visualops
 
 ##use auto-complete
 press `tab` twice when input command
+
+
+
+[install docker]
+=====================================================
+## ubuntu 14.04 (http://beta-docs.docker.io/installation/ubuntulinux/)
+apt-get -y install docker.io
+ln -sf /usr/bin/docker.io /usr/local/bin/docker
+sed -i '$acomplete -F _docker docker' /etc/bash_completion.d/docker.io
+update-rc.d docker.io defaults

@@ -11,10 +11,18 @@ import json
 import os
 import docker
 import datetime
+import re
 
 import visualops
 from visualops.utils import boot2docker
-from visualops.utils.utils import error,warning,user_param
+from visualops.utils import utils
+from visualops.utils import db
+
+import logging
+requests_log = logging.getLogger("requests")
+requests_log.setLevel(logging.WARNING)
+
+IPS=["PrivateIp","PublicIp","PrivateIpAddress","PublicIpAddress"]
 
 ## Helpers
 def _get_config():
@@ -79,8 +87,8 @@ def _set_id(infos):
         elif infos.get("id"): cid = infos["id"]
         if "Id" not in infos:
             infos["Id"] = cid
-        infos.pop("id")
-        infos.pop("ID")
+        infos.pop("id",None)
+        infos.pop("ID",None)
     return infos
 
 def _get_image_infos(config,image):
@@ -100,7 +108,8 @@ def _get_image_infos(config,image):
     infos = None
     try:
         infos = _set_id(client.inspect_image(image))
-    except Exception:
+    except Exception as e:
+        print e
         pass
     return infos
 
@@ -170,7 +179,7 @@ def _parse_image_multilogs_string(config, ret, repo):
         # search last layer grabbed
         for l in image_logs:
             if isinstance(l, dict):
-                if l.get('status') == 'Download complete' and l.get('Id'):
+                if l.get('status') == 'Download complete' and l.get('id'):
                     infos = _get_image_infos(config, repo)
                     break
     return image_logs, infos
@@ -360,7 +369,7 @@ def create_container(config,
         return info
     except Exception as e:
         err = e
-    error("Unable to create your container: %s"%err)
+    utils.error("Unable to create your container: %s"%err)
     return None
 
 
@@ -387,13 +396,14 @@ def stop(config, container, timeout=10, *args, **kwargs):
             if not is_running(config, dcontainer):
                 print "Container stopped."
                 return True
+            else:
+                return False
         else:
-            print "Container not running."
             return True
     except Exception as e:
         err = e
-    error("Unable to stop the container: %s"%err)
-    return False
+    utils.warning("Container not existing")
+    return True
 
 
 def kill(config, container, *args, **kwargs):
@@ -420,7 +430,7 @@ def kill(config, container, *args, **kwargs):
             return True
     except Exception as e:
         err = e
-    error("Unable to kill the container: %s"%err)
+    utils.error("Unable to kill the container: %s"%err)
     return False
 
 
@@ -445,26 +455,29 @@ def remove_container(config, container=None, force=True, v=False, *args, **kwarg
         try:
             dcontainer = _get_container_infos(config, container)['Id']
         except Exception:
-            print "Container not existing."
+#            print "Container not existing."
             return True
         else:
+            if not dcontainer:
+                return True
             if is_running(config, dcontainer):
                 if not force:
-                    print "ERROR: Container running, won't remove it."
+                    utils.error("Container running, won't remove it.")
                     return False
                 else:
                     kill(config, dcontainer)
             client.remove_container(dcontainer, v=v)
             try:
-                _get_container_infos(config, dcontainer)
+                infos = _get_container_infos(config, dcontainer)
+                if not infos:
+                    return True
             except Exception:
-                print "Container has been successfully removed."
+#                print "Container has been successfully removed."
                 return True
     except Exception as e:
         err = e
-    error("Unable to remove container: %s"%err)
+    utils.error("Unable to remove container: %s"%err)
     return False
-
 
 def restart(config, container, timeout=10, *args, **kwargs):
     '''
@@ -490,7 +503,7 @@ def restart(config, container, timeout=10, *args, **kwargs):
             return True
     except Exception as e:
         err = e
-    error("Unable to restart the container: %s"%err)
+    utils.error("Unable to restart the container: %s"%err)
     return False
 
 
@@ -532,7 +545,7 @@ def start(config, container, binds=None, ports=None, port_bindings=None,
             return _get_container_infos(config, container)
     except Exception as e:
         err = e
-    error("Unable to start your container: %s"%err)
+    utils.error("Unable to start your container: %s"%err)
     return None
 
 
@@ -578,7 +591,7 @@ def get_images(config, name=None, quiet=False, all=True, *args, **kwargs):
         return infos
     except Exception as e:
         err = e
-    error("Unable to list Docker images: %s"%err)
+    utils.error("Unable to list Docker images: %s"%err)
     return None
 
 
@@ -612,7 +625,7 @@ def get_containers(config,
         return ret
     except Exception as e:
         err = e
-    error("Unable to list Docker containers: %s"%err)
+    utils.error("Unable to list Docker containers: %s"%err)
     return None
 
 
@@ -625,7 +638,7 @@ def login(config, username=None, password=None, email=None, url=None, client=Non
         lg = c.login(username, password, email, url)
         print "%s logged to %s"%(username,(url if url else "default hub"))
     except Exception as e:
-        error("%s can't login to repo %s: %s"%(username,(url if url else "default repo"),e))
+        utils.error("%s can't login to repo %s: %s"%(username,(url if url else "default repo"),e))
         return False
     return True
 ##
@@ -703,7 +716,7 @@ def installed(config,
     '''
     iinfos = _get_image_infos(config, image)
     if not iinfos:
-        error("Image not found.")
+        utils.error("Image not found.")
         return None
     cinfos = _get_container_infos(config, name)
     if cinfos:
@@ -764,7 +777,7 @@ def installed(config,
     if container:
         print "Container created, id: %s"%(container.get("Id"))
     else:
-        error("Couldn't create container.")
+        utils.error("Couldn't create container.")
     return container
 
 
@@ -821,13 +834,13 @@ def running(config,
         Container Id
     '''
     if not containers:
-        warning("No container specified")
+        utils.warning("No container specified")
         return [], True
 
     if ports and port_bindings:
         (ports,port_bindings) = _gen_ports(ports,port_bindings,len(containers))
         if not ports or not port_bindings:
-            error("Unable to generate port bindings (is there enough space between each allocation required?)")
+            utils.error("Unable to generate port bindings (is there enough space between each allocation required?)")
             return [], True
 
     containers_out = []
@@ -851,10 +864,10 @@ def running(config,
                 containers_out.append(started)
             else:
                 failure = True
-                error("Unable to run container: %s - can't start"%container)
+                utils.error("Unable to run container: %s - can't start"%container)
         else:
             failure = True
-            error("Unable to run container: %s - can't install"%container)
+            utils.error("Unable to run container: %s - can't install"%container)
 
     return containers_out, failure
 
@@ -887,6 +900,7 @@ def pull(config, repo, tag=None, username=None, password=None, email=None, *args
             url = (url[0] if len(url) > 1 else None)
             if not login(config,username,password,email,url):
                 raise Exception("Can't login")
+        print "Pulling repository %s ... (This may take a while)"%repo
         ret = client.pull(repo, tag=tag)
         if ret:
             logs, infos = _parse_image_multilogs_string(config, ret, repo)
@@ -895,37 +909,49 @@ def pull(config, repo, tag=None, username=None, password=None, email=None, *args
                 if tag:
                     repotag = '{0}:{1}'.format(repo, tag)
                 print 'Repo {0} was pulled ({1})'.format(repotag, infos['Id'])
-                return infos
+                return infos, False
             else:
-                error = _pull_assemble_error_status(logs)
+                err = _pull_assemble_error_status(logs)
     except Exception as e:
         err = e
-    error("An error has occured pulling repo %s: %e"%(repo,err))
-    return None
+    utils.error("An error has occured pulling repo %s: %s"%(repo,err))
+    return None, True
+##
+
+
+## Files state
+def create_files(config, container, files):
+    for f in files:
+        path = f.get("key")
+        if not path:
+            utils.error("Unable to read config file path.")
+            continue
+        dir_path = os.path.join(config["config_path"],"docker","files",container)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        host_path = os.path.join(dir_path,("%s"%path).replace('/','-'))
+        content = render(config, path, f.get("value",""))
+        try:
+            with open(host_path, 'w') as f:
+                f.write(content)
+            print "Configuration file %s created: %s."%(path,host_path)
+        except Exception as e:
+            utils.error("Unable to store configuration file %s: %s"%(host_path,e))
+    return None, False
 ##
 
 
 ## Deploy
-def _create_files(config, state_params, exec_params):
+def _create_files_volumes(config, state_params, exec_params):
     volumes = []
-    for f in state_params.get("files",{}):
+    for f in state_params.get("files",[]):
         path = f.get("key")
         if not path:
-            error("Unable to read config file path.")
+            utils.error("Unable to read config file path.")
             continue
         print "Configuration file found: %s."%path
         dir_path = os.path.join(config["config_path"],"docker","files",state_params["container"])
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
         host_path = os.path.join(dir_path,("%s"%path).replace('/','-'))
-        content = f.get("value","")
-        # TODO render
-        try:
-            with open(host_path, 'w') as f:
-                f.write(content)
-        except Exception as e:
-            error("Unable to store configuration file %s."%host_path)
-            continue
         volumes.append({"key":host_path,"value":path})
     return exec_params.get("volumes",[])+volumes
 
@@ -938,7 +964,7 @@ def _replace_params(config, hostname, addin, param):
         return [{"key":key,"value":res[key]} for key in res]
     elif res:
         return res
-    return addin[param]
+    return addin.get(param)
 
 def _convert_running(config, appname, hostname, addin):
     addin["port_bindings"] = _replace_params(config, hostname, addin,"port_bindings")
@@ -955,20 +981,20 @@ def _convert_running(config, appname, hostname, addin):
             if not key: continue
 
             # get user input
-            ui = user_param(config,
-                            "Update port binding for %s: %s=%s"%(addin["container"],key,value),
-                            (None
-                             if key not in config["port_bindings"][hostname][addin["container"]]
-                             else "%s=%s"%((key if key else ""),(value if value else ""))))
+            ui = utils.user_param(config,
+                                  "Update port binding for %s (host=container): %s=%s"%(addin["container"],key,value),
+                                  (None
+                                   if key not in config["port_bindings"][hostname].get(addin["container"],{})
+                                   else "%s=%s"%((key if key else ""),(value if value else ""))))
             # parse result
             if not ui:
                 config["port_bindings"][hostname][addin["container"]][key] = value
                 continue
             ui = ui.split("=")
             if len(ui) != 2:
-                error("Wrong port binding syntax")
+                utils.error("Wrong port binding syntax")
                 continue
-            key, value = ui[0], ui[1]
+            key, value = ui[1], ui[0]
             # persist
             config["port_bindings"][hostname][addin["container"]][key] = value
 
@@ -996,24 +1022,27 @@ def _convert_running(config, appname, hostname, addin):
             if not key: continue
 
             # get user input
-            ui = user_param(config,
-                            "Update mount point for %s: %s=%s"%(addin["container"],key,value),
-                            (None
-                             if not config["volumes"][hostname][addin["container"]][key]
-                             else "%s=%s"%((key if key else ""),(value if value else ""))))
+            ui = utils.user_param(config,
+                                  "Update mount point for %s: %s=%s"%(addin["container"],key,value),
+                                  (None
+                                   if key not in config["volumes"][hostname].get(addin["container"],{})
+                                   else "%s=%s"%((key if key else ""),(value if value else ""))))
             # parse result
             if not ui:
                 config["volumes"][hostname][addin["container"]][key] = value
                 continue
             ui = ui.split("=")
             if len(ui) != 2:
-                error("Wrong volume syntax")
+                utils.error("Wrong volume syntax")
                 continue
             key, value = ui[0], ui[1]
             if config.get("chroot"):
                 key = os.path.join(config["chroot"],appname,hostname,addin["container"],key)
             # persist
             config["volumes"][hostname][addin["container"]][key] = value
+
+
+
 
             mp = value.split(":")
             ro = (True if (len(mp) == 2 and mp[1] == "ro") else False)
@@ -1047,22 +1076,22 @@ def _convert_running(config, appname, hostname, addin):
         addin["links"] = links
     if addin.get("cpu_shares"):
         # get user input
-        ui = user_param(config,
-                        "Update CPU shares for %s: %s"%(addin["container"],addin.get("cpu_shares")),
-                        (None
-                         if not config["volumes"][hostname][addin["container"]][key]
-                         else addin.get("cpu_shares")))
+        ui = utils.user_param(config,
+                              "Update CPU shares for %s: %s"%(addin["container"],addin.get("cpu_shares")),
+                              (None
+                               if addin["container"] not in config["cpu_shares"][hostname]
+                               else addin.get("cpu_shares")))
         # parse result
         addin["cpu_shares"] = ui
         # persist
         config["cpu_shares"][hostname][addin["container"]] = ui
     if addin.get("mem_limit"):
         # get user input
-        ui = user_param(config,
-                        "Update memory limit for %s: %s"%(addin["container"],addin.get("mem_limit")),
-                        (None
-                         if not config["volumes"][hostname][addin["container"]][key]
-                         else addin.get("mem_limit")))
+        ui = utils.user_param(config,
+                              "Update memory limit for %s: %s"%(addin["container"],addin.get("mem_limit")),
+                              (None
+                               if addin["container"] not in config["mem_limit"][hostname]
+                               else addin.get("mem_limit")))
         # parse result
         mem = ui
         # persist
@@ -1080,9 +1109,9 @@ def _convert_running(config, appname, hostname, addin):
         addin["containers"] = [addin["container"]]
     else:
         # get user input
-        ui = user_param(config,
-                        "Update number of containers for %s"%(addin["container"]),
-                        addin["count"])
+        ui = utils.user_param(config,
+                              "Update number of containers for %s"%(addin["container"]),
+                              addin["count"])
         # parse result
         addin["count"] = ui
         # persist
@@ -1100,6 +1129,10 @@ def _convert_running(config, appname, hostname, addin):
 
 _deploy = {
     'attr' : {
+        "create_files": {
+            'container'     : 'container',
+            'files'         : 'files',
+        },
         "pull" : {
             'image'         : 'repo',
             'tag'           : 'tag',
@@ -1125,10 +1158,11 @@ _deploy = {
             'port_bindings' : 'port_bindings',
             'count'         : 'count',
             # deploy
-            'files'         : _create_files,
+            'files'         : _create_files_volumes,
         },
     },
     'split' : [
+        "create_files",
         "pull",
         "running"
     ],
@@ -1137,23 +1171,25 @@ _deploy = {
     },
 }
 
-# deploy a container
-def deploy(config, appname, hostname, state):
+
+
+# preproc deploy a container
+def preproc_deploy(config, appname, hostname, state):
     if "container" not in state:
-        error("Container name missing")
+        utils.error("Container name missing")
         return {}
     elif "image" not in state:
-        error("Image name missing")
+        utils.error("Image name missing")
         return {}
     state["container"] = "%s-%s-%s"%(appname,hostname,state["container"])
     print "--> Preparing to run container(s) %s from image %s ..."%(state["container"],state["image"])
-    out = {}
+    actions = {}
     for action in _deploy.get('split',[]):
         params = {}
         for param in _deploy.get('attr',{}).get(action,{}):
             if not state.get(param): continue
             if hasattr(_deploy['attr'][action][param], '__call__'):
-                params.update(_deploy['attr'][action][param](config,state[param],params))
+                params.update(_deploy['attr'][action][param](config,state,params))
             elif type(state[param]) is list:
                 params[_deploy['attr'][action][param]] = params.get(_deploy['attr'][action][param],[])+state[param]
             elif type(state[param]) is dict:
@@ -1163,14 +1199,27 @@ def deploy(config, appname, hostname, state):
                 params[_deploy['attr'][action][param]] = state[param]
         if hasattr(eval(action), '__call__'):
             if action in _deploy.get("convert",{}):
-                params = _deploy["convert"][action](config, appname, hostname, params)
-            out[action] = eval(action)(config, *params, **params)
+                actions[action] = _deploy["convert"][action](config, appname, hostname, params)
+            else:
+                actions[action] = params
         else:
-            error("Action not found: %s"%action)
+            utils.error("Action not found: %s"%action)
+    return actions
+
+# deploy a container
+def deploy(config, actions):
+    out = {}
+    for action in actions:
+        if hasattr(eval(action), '__call__'):
+            out[action], failure = eval(action)(config, **actions[action])
+            if failure:
+                break
     app = {}
-    for container in out["running"]:
-        name = container.get("name")
+    db.delete_app( config["appname"] )
+    for container in out.get("running",[]):
+        name = container.get("Name").replace("/","")
         print "--> Container successfully started %s."%name
+        db.create_container(config["appname"], container.get("Id"), name)
         app[name] = container
     return app
 
@@ -1187,7 +1236,44 @@ def generate_hosts(config, app):
         path = (app[container]["HostsPath"]
                 if boot2docker.has() is not True
                 else os.path.join(config["config_path"],"docker","containers",app[container]["Id"],"hosts"))
-        with open(path, 'r+') as f:
-            for host in hosts:
-                f.write("%s\t%s\n"%(host,hosts[host]))
+        try:
+            with open(path, 'r+') as f:
+                for host in hosts:
+                    f.write("%s\t%s\n"%(host,hosts[host]))
+        except Exception as e:
+            utils.error(e)
+##
+
+## renderer
+def list_containers(host):
+    return [c for container in host for c in host[container]["containers"]]
+
+def render(config, filename, content):
+    rendered = ""
+    l = 1
+    for line in content.split("\n"):
+        objs = re.findall("@{(?P<uid>.*?)\.(?P<param>.*?)}",line)
+        for obj in objs:
+            if obj[1] not in IPS: continue
+            hostname = config["hosts_table"].get(obj[0])
+            containers = list_containers(config["actions"].get(hostname,{}))
+            if len(containers) == 0:
+                ip = "127.0.0.1"
+            elif len(containers) == 1:
+                ip = containers.pop()
+            else:
+                # TODO (release 2): render with config
+                ip = utils.user_param(config,
+                                      '''
+Multiple containers found on instance %s.
+Note: if you are not sure, and correctly binded your ports, you can try to leave as default.
+
+Context: file %s, line %s: %s
+Please, specify which container to use: %s
+                                      '''%(hostname,filename,l,line,", ".join(containers)),
+                                      "127.0.0.1")
+            line = re.sub("@{%s\.(.*?)}"%obj[0],ip,line,count=1)
+        rendered += "%s\n"%line
+        l += 1
+    return (rendered[:-1] if (rendered[-1:] == '\n' and content[-1:] != '\n') else rendered)
 ##

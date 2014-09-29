@@ -5,7 +5,12 @@ import sys
 import os.path
 import ConfigParser
 import yaml
+import urllib2
+import contextlib
+import logging
 from datetime import date
+from prettytable import PrettyTable
+from visualops.utils import constant
 
 DEFAULT_YEAR  = date.today().year
 PROGRESS_RE = re.compile(r'\((\s?\d+)%\)')
@@ -48,6 +53,16 @@ def load_session():
         print('load session failed, try login again!')
         return (None, None)
 
+#Handle AppService Error
+def hanlde_error(err, result):
+    if err:
+        err_msg = constant.ERROR[err]
+        if err_msg:
+            log = logging.getLogger(__name__)
+            log.debug('>AppService return code : %s' % err)
+            raise RuntimeError(err_msg)
+        else:
+            raise RuntimeError('Uncaught exception (%s) %s' % (err,result))
 
 class Progress(object):
     def __init__(self, filename=None):
@@ -113,3 +128,67 @@ def dict2yaml(data):
 def yaml2dict(data):
     rlt = yaml.load(data)
     return rlt
+
+def dict2str(data):
+    return str(data)
+
+def str2dict(str):
+    return eval(str)
+
+# Pretty Print table in tabular format
+def print_prettytable(title,rows):
+    x = PrettyTable(title)
+    x.padding_width = 1 # One space between column edges and contents (default)
+    for col in title:
+        x.align[col] = "l"
+    for row in rows:
+        x.add_row(row)
+    return x
+
+# Downlaod file with progress bar
+def download(url, file_name=None, verbose=True):
+    if not file_name:
+        file_name = url.split('/')[-1]
+    u = urllib2.urlopen(url)
+    f = open(file_name, 'wb')
+    meta = u.info()
+    file_size = int(meta.getheaders("Content-Length")[0])
+    print("Downloading: %s Bytes:%s"%(file_name, file_size))
+    file_size_dl = 0
+    block_sz = 8*1024
+    buf = ""
+    while True:
+        buf = u.read(block_sz)
+        if not buf:
+            break
+        file_size_dl += len(buf)
+        f.write(buf)
+        if verbose:
+            status = r"%10d  [%3.2f%%]"%(file_size_dl,file_size_dl*100./file_size)
+            status = status + chr(8)*(len(status)+1)
+            print(status,end="")
+    f.close()
+    print("%10d  [100.00%%]"%(file_size_dl))
+
+# mute call
+class DummyFile(object):
+    def write(self, x): pass
+
+@contextlib.contextmanager
+def nostdout():
+    save_stdout = sys.stdout
+    sys.stdout = DummyFile()
+    save_stderr = sys.stderr
+    sys.stderr = DummyFile()
+    yield
+    sys.stdout = save_stdout
+    sys.stderr = save_stderr
+
+# configuration generator
+def gen_config(appname=None):
+    return ({
+        "appname" : appname,
+        "interactive": True,
+        "config_path": os.path.expanduser("~/.visualops"),
+        "boot2docker_iso": "https://s3.amazonaws.com/visualops-cli/boot2docker.iso",
+    })
