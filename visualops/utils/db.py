@@ -186,20 +186,21 @@ def create_container(app_id,container_id,container_name):
 
 def get_app_info(app_id):
     """
-    get app list( exclude app_data )
+    get app info( exclude app_data )
     """
     try:
         conn = get_conn()
         c = conn.cursor()
         c.execute("SELECT name,source_id,region,state,create_at,change_at FROM app WHERE id='{0}' ".format(app_id))
         app_info = c.fetchone()
+        c.execute("SELECT app_data FROM app WHERE id='{0}' ".format(app_id))
+        app_data = c.fetchone()
         c.execute("SELECT id,name,app_id FROM container WHERE app_id='{0}' ".format(app_id))
         container_rlt = c.fetchall()
         conn.close()
-        #print '[app_list]list app succeed!'
-        return (app_info, container_rlt)
+        return (app_info, app_data, container_rlt)
     except Exception,e:
-        raise RuntimeError('list app failed! %s' % e)
+        raise RuntimeError('get app info failed! %s' % e)
 
 def get_app_data(app_id):
     """

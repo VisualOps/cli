@@ -90,14 +90,24 @@ class Run(Command):
         config = utils.gen_config(app.get("name","default-app"))
 
         try:
-            #insert app to local db
             self.run_stack(config, app)
+
+            #save app info into local db
             app["name"] = config["appname"]
             db.create_app( config["appname"], config["appname"], stack_id, app['region'], base64.b64encode(utils.dict2str(app)) )
         except Exception,e:
             raise RuntimeError('Stack run failed! %s' % e)
             db.delete_app( config["appname"] )
 
+
+    # Save user input to app_dict
+    def persist_app(self,actions, app_dict):
+        for (host,v1) in  actions.items():
+            for (container,v2) in v1.items():
+                try:
+                    app_dict['hosts'][host]['linux.docker.deploy'][container]['count'] = actions[host][container]['running']['count']
+                except Exception,e:
+                    raise RuntimeError("Save user's input failed! %s" % e)
 
     # Run stack
     def run_stack(self, config, app_dict):
@@ -144,6 +154,10 @@ class Run(Command):
                                                                                     hostname,
                                                                                     app_dict["hosts"][hostname][state][container]))
         config["actions"] = actions
+
+        #save user input parameter to app_dict
+        self.persist_app(actions,app_dict)
+
         app = {}
         for hostname in actions:
             for container in actions[hostname]:
