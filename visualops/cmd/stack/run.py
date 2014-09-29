@@ -105,7 +105,32 @@ class Run(Command):
         for (host,v1) in  actions.items():
             for (container,v2) in v1.items():
                 try:
-                    app_dict['hosts'][host]['linux.docker.deploy'][container]['count'] = actions[host][container]['running']['count']
+                    #save source to target
+                    app_dict_container = app_dict['hosts'][host]['linux.docker.deploy'][container]  #target
+                    actions_container  = actions[host][container]['running']                        #source
+
+                    #1. save count
+                    app_dict_container['count'] = actions_container['count']
+
+                    #2. save volume
+                    app_dict_volumes = []
+                    action_volumes   = actions_container['binds']
+                    for (volume,v3) in action_volumes.items():
+                        mountpoint = {}
+                        mountpoint['key']   = volume
+                        mountpoint['value'] = v3['bind']
+                        app_dict_volumes.append(mountpoint)
+                    app_dict_container['volumes'] = app_dict_volumes
+
+                    #3. save port_bindings
+                    app_dict_port_bindings = []
+                    actions_port_bindings  = actions_container['port_bindings']
+                    for (port,v4) in actions_port_bindings.items():
+                        bingding = {}
+                        bingding['key']   = v4['HostPort']
+                        bingding['value'] = port
+                        app_dict_port_bindings.append(bingding)
+                    app_dict_container['port_bindings'] = app_dict_port_bindings
                 except Exception,e:
                     raise RuntimeError("Save user's input failed! %s" % e)
 
