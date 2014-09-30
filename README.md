@@ -3,8 +3,16 @@ cli
 CLI for VisualOps
 
 
+[required package]
+=====================================================
+## Ubuntu
+apt-get install libyaml-dev libpython2.7-dev
 
-[third-lib]
+## CentOS
+yum install libyaml libyaml-devel python-devel
+
+
+[required python lib]
 =====================================================
 
 ##1.install virtualenv (virtual python environment)
