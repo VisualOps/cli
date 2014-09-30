@@ -2,7 +2,7 @@ import logging
 import json
 
 from cliff.command import Command
-from visualops.utils import dockervisops,boot2docker,utils,db
+from visualops.utils import dockervisops,boot2docker,utils,db,constant
 
 
 class Reboot(Command):
@@ -12,7 +12,8 @@ class Reboot(Command):
 
     def get_parser(self, prog_name):
         parser = super(Reboot, self).get_parser(prog_name)
-        parser.add_argument('-l', '--local', action='store_true', dest='reboot_app_local', help='reboot local app')
+        parser.add_argument('-l', '--local', action='store_true', dest='local', help='reboot local app')
+        parser.add_argument('-f', '--force', action='store_true', dest='force', help='force reboot app')
         parser.add_argument('app_id', nargs='?', default='')
         return parser
 
@@ -33,18 +34,27 @@ class Reboot(Command):
 
         config = utils.gen_config(appname)
 
-        if parsed_args.reboot_app_local:
+        if parsed_args.local:
+            #1. check app state
+            state = db.get_app_state(appname)
+            if not parsed_args.force and state != constant.STATE_APP_RUNNING:
+                raise RuntimeError("App current state is {0}, only support reboot 'Running' app!".format(state))
+            print 'Rebooting local app ...'
+            #2. update to rebooting
+            db.reboot_app(appname)
+            #3. do action
             self.reboot_app(config, appname, app)
-            print 'Reboot local app ...'
+            #4. update to running
+            db.reboot_app(appname,True)
+            print 'Local app %s rebooted!' % appname
         else:
             print 'Reboot remote app ...(not support yet, please try -l)'
             return
 
-        #save app state
-        db.start_app(appname)
 
     # Reboot app
     def reboot_app(self, config, appname, app_dict):
+
         if boot2docker.has():
             boot2docker.run(config, appname)
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appname))

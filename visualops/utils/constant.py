@@ -5,6 +5,17 @@ IDE_URL = 'http://ide.visualops.io/ops/'
 API_URL = 'http://api.visualops.io'
 DB_FILE = os.path.expanduser("~/.visualops/db")
 
+#app state
+#STATE_APP_INITIALIZING = "Initializing"
+STATE_APP_RUNNING      = "Running"
+STATE_APP_STOPPING     = "Stopping"
+STATE_APP_STOPPED      = "Stopped"
+STATE_APP_STARTING     = "Starting"
+STATE_APP_REBOOTING    = "Rebooting"
+STATE_APP_CLONING      = "Cloning"
+STATE_APP_TERMINATING  = "Terminating"
+STATE_APP_TERMINATED   = "Terminated"
+
 # AppService Error Code
 ERROR = {
     #legacy
