@@ -60,7 +60,7 @@ class Start(Command):
                                             for i in range(1,int(app_dict["hosts"][hostname][state][container]["count"])+1)])
                         print containers
                         for cname in containers:
-                            if dockervisops.start(config, cname) is True:
+                            if dockervisops.start(config, cname):
                                 print "Container %s started"%cname
                             else:
                                 utils.error("Unable to start container %s"%container_name)
