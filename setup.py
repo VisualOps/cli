@@ -11,8 +11,9 @@ def grep(attrname):
 setup(
     name='visualops',
     version=grep('__version__'),
-    author='Peng Zhao',
-    author_email='peng@visuak.io',
+    author='Thibault Bronchain',
+    author_email='thibault@visualops.io',
+    license='LICENSE.txt',
     url='https://github.com/MadeiraCloud/cli',
     description='VisualOps CLI',
     packages=find_packages(),
