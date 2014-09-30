@@ -104,7 +104,7 @@ class Clone(Command):
                 db.create_app(config["appname"], config["appname"], app_id, app['region'], base64.b64encode(utils.dict2str(app)) )
             except Exception,e:
                 raise RuntimeError('Clone app to local failed! %s' % e)
-                db.delete_app( config["appname"] )
+                db.delete_app_info( config["appname"] )
 
 
     # Clone app

@@ -2,7 +2,7 @@ import logging
 import json
 
 from cliff.command import Command
-from visualops.utils import dockervisops,boot2docker,utils,db
+from visualops.utils import dockervisops,boot2docker,utils,db,constant
 
 
 
@@ -13,7 +13,8 @@ class Stop(Command):
 
     def get_parser(self, prog_name):
         parser = super(Stop, self).get_parser(prog_name)
-        parser.add_argument('-l', '--local', action='store_true', dest='stop_app_local', help='stop local app')
+        parser.add_argument('-l', '--local', action='store_true', dest='local', help='stop local app')
+        parser.add_argument('-f', '--force', action='store_true', dest='force', help='force stop app')
         parser.add_argument('app_id', nargs='?', default='')
         return parser
 
@@ -33,19 +34,28 @@ class Stop(Command):
         self.log.debug( '==============================================================' )
 
         config = utils.gen_config(appname)
-        if parsed_args.stop_app_local:
-            self.stop_app(config, appname, app)
+        if parsed_args.local:
+            #1. check app state
+            state = db.get_app_state(appname)
+            if not parsed_args.force and state != constant.STATE_APP_RUNNING:
+                raise RuntimeError("App current state is {0}, only support stop 'Running' app!".format(state))
+
             print 'Stopping local app ...'
+            #2. update to stopping
+            db.stop_app(appname)
+            #3. do action
+            self.stop_app(config, appname, app)
+            #4. update to stopped
+            db.stop_app(appname,True)
+            print 'Local app %s stopped!' % appname
         else:
             print 'Stopping remote app ...(not support yet, please try -l)'
             return
 
-        #save app state
-        db.stop_app(appname)
-
 
     # Stop app
     def stop_app(self, config, appname, app_dict):
+
         if boot2docker.has():
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appname))
         for hostname in app_dict.get("hosts",{}):

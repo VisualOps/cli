@@ -2,7 +2,7 @@ import logging
 import json
 
 from cliff.command import Command
-from visualops.utils import dockervisops,boot2docker,utils,db
+from visualops.utils import dockervisops,boot2docker,utils,db,constant
 
 
 class Terminate(Command):
@@ -12,7 +12,8 @@ class Terminate(Command):
 
     def get_parser(self, prog_name):
         parser = super(Terminate, self).get_parser(prog_name)
-        parser.add_argument('-l', '--local', action='store_true', dest='terminate_app_local', help='terminate local app')
+        parser.add_argument('-l', '--local', action='store_true', dest='local', help='terminate local app')
+        parser.add_argument('-f', '--force', action='store_true', dest='force', help='force terminate app')
         parser.add_argument('app_id', nargs='?', default='')
         return parser
 
@@ -33,15 +34,25 @@ class Terminate(Command):
 
         config = utils.gen_config(appname)
 
-        if parsed_args.terminate_app_local:
+        if parsed_args.local:
+            #1. check app state
+            state = db.get_app_state(appname)
+            if state in [constant.STATE_APP_TERMINATED,constant.STATE_APP_TERMINATING]:
+                raise RuntimeError("App current state is {0}, cancel!".format(state))
+            elif not parsed_args.force and not state in [constant.STATE_APP_RUNNING,constant.STATE_APP_STOPPED]:
+                raise RuntimeError("App current state is {0}, only support stop 'Running' or 'Stopped' app!".format(state))
+
+            print 'Terminating local app ...'
+            #2. update to terminating
+            db.terminate_app(appname)
+            #3. do action
             self.terminate_app(config, appname, app)
-            print 'Terminate local app ...'
+            #4. update to terminated
+            db.terminate_app(appname,True)
+            print 'Local app %s terminated!' % appname
         else:
             print 'Terminate remote app ...(not support yet, please try -l)'
             return
-
-        #save app state
-        db.terminate_app(appname)
 
 
     # Terminate app
@@ -59,10 +70,10 @@ class Terminate(Command):
                                             for i in range(1,int(app_dict["hosts"][hostname][state][container]["count"])+1)])
                         print containers
                         for cname in containers:
-                            if dockervisops.remove_container(config, container_name) is True:
+                            if dockervisops.remove_container(config, cname) is True:
                                 print "Container %s removed"%cname
                             else:
-                                utils.error("Unable to remove container %s"%container_name)
+                                utils.error("Unable to remove container %s"%cname)
         if boot2docker.has():
             boot2docker.delete(config, appname)
         print "App %s terminated."%appname

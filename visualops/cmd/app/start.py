@@ -2,7 +2,7 @@ import logging
 import json
 
 from cliff.command import Command
-from visualops.utils import dockervisops,boot2docker,utils,db
+from visualops.utils import dockervisops,boot2docker,utils,db,constant
 
 
 class Start(Command):
@@ -12,7 +12,8 @@ class Start(Command):
 
     def get_parser(self, prog_name):
         parser = super(Start, self).get_parser(prog_name)
-        parser.add_argument('-l', '--local', action='store_true', dest='start_app_local', help='start local app')
+        parser.add_argument('-l', '--local', action='store_true', dest='local', help='start local app')
+        parser.add_argument('-f', '--force', action='store_true', dest='force', help='force start app')
         parser.add_argument('app_id', nargs='?', default='')
         return parser
 
@@ -33,19 +34,28 @@ class Start(Command):
 
         config = utils.gen_config(appname)
 
-        if parsed_args.start_app_local:
+        if parsed_args.local:
+            #1. check app state
+            state = db.get_app_state(appname)
+            if not parsed_args.force and state != constant.STATE_APP_STOPPED:
+                raise RuntimeError("App current state is {0}, only support stop 'Stopped' app!".format(state))
+
+            print 'Starting local app ...'
+            #2. update to starting
+            db.start_app(appname)
+            #3. do action
             self.start_app(config, appname, app)
-            print 'Start local app ...'
+            #4. update to running
+            db.start_app(appname,True)
+            print 'Local app %s started!' % appname
         else:
             print 'Start remote app ...(not support yet, please try -l)'
             return
 
-        #save app state
-        db.start_app(appname)
-
 
     # Start app
     def start_app(self, config, appname, app_dict):
+
         if boot2docker.has():
             boot2docker.run(config, appname)
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appname))
@@ -60,7 +70,7 @@ class Start(Command):
                                             for i in range(1,int(app_dict["hosts"][hostname][state][container]["count"])+1)])
                         print containers
                         for cname in containers:
-                            if dockervisops.start(config, cname) is True:
+                            if dockervisops.start(config, cname):
                                 print "Container %s started"%cname
                             else:
                                 utils.error("Unable to start container %s"%container_name)

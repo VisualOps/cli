@@ -1215,7 +1215,7 @@ def deploy(config, actions):
             if failure:
                 break
     app = {}
-    db.delete_app( config["appname"] )
+    db.delete_app_info( config["appname"] )
     for container in out.get("running",[]):
         name = container.get("Name").replace("/","")
         print "--> Container successfully started %s."%name
@@ -1231,7 +1231,10 @@ def generate_hosts(config, app):
         ...
     }
     '''
-    hosts = {app[container]["NetworkSettings"]["IPAddress"]:app[container]["Name"].replace('/','') for container in app}
+#    hosts = {app[container]["NetworkSettings"]["IPAddress"]:app[container]["Name"].replace('/','') for container in app}
+    hosts = {}
+    for container in app:
+        hosts[app[container]["NetworkSettings"]["IPAddress"]] = app[container]["Name"].replace('/','')
     for container in app:
         path = (app[container]["HostsPath"]
                 if boot2docker.has() is not True

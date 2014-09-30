@@ -91,14 +91,14 @@ def create_app(app_id, app_name, source_id, region, app_data):
 
         #insert new app
         c.execute("INSERT INTO app (id,name,source_id,region,state,create_at,change_at,app_data) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}')"
-            .format(app_id,app_name,source_id,region,'Running',create_at,create_at,app_data))
+            .format(app_id, app_name, source_id, region, constant.STATE_APP_RUNNING, create_at, create_at, app_data))
         conn.commit()
         conn.close()
         print 'create app %s succeed!' % app_id
     except Exception, e:
         raise RuntimeError('create app %s failed! %s' % (app_id,e))
 
-def delete_app(app_id):
+def delete_app_info(app_id):
     """
     delete app info from local db
     """
@@ -113,25 +113,36 @@ def delete_app(app_id):
         raise RuntimeError('clear old app %s in db failed! %s' % (app_id,e))
 
 
-def stop_app(app_id):
+def stop_app(app_id, is_finished=False):
     """
     update app state to 'Stopped'
     """
-    app_update_state(app_id, 'Stopped')
+    state = constant.STATE_APP_STOPPED if is_finished else constant.STATE_APP_STOPPING
+    app_update_state(app_id, state)
 
 
-def start_app(app_id):
+def start_app(app_id, is_finished=False):
     """
     update app state to 'Running'
     """
-    app_update_state(app_id, 'Running')
+    state = constant.STATE_APP_RUNNING if is_finished else constant.STATE_APP_STARTING
+    app_update_state(app_id, state)
 
 
-def terminate_app(app_id):
+def reboot_app(app_id, is_finished=False):
+    """
+    update app state to 'Running'
+    """
+    state = constant.STATE_APP_RUNNING if is_finished else constant.STATE_APP_REBOOTING
+    app_update_state(app_id, state)
+
+
+def terminate_app(app_id, is_finished=False):
     """
     update app state to 'Terminated'
     """
-    app_update_state(app_id, 'Terminated')
+    state = constant.STATE_APP_TERMINATED if is_finished else constant.STATE_APP_TERMINATING
+    app_update_state(app_id, state)
 
 
 def get_app_list(region_name=None,filter_name=None):
@@ -186,20 +197,21 @@ def create_container(app_id,container_id,container_name):
 
 def get_app_info(app_id):
     """
-    get app list( exclude app_data )
+    get app info( exclude app_data )
     """
     try:
         conn = get_conn()
         c = conn.cursor()
         c.execute("SELECT name,source_id,region,state,create_at,change_at FROM app WHERE id='{0}' ".format(app_id))
         app_info = c.fetchone()
+        c.execute("SELECT app_data FROM app WHERE id='{0}' ".format(app_id))
+        app_data = c.fetchone()
         c.execute("SELECT id,name,app_id FROM container WHERE app_id='{0}' ".format(app_id))
         container_rlt = c.fetchall()
         conn.close()
-        #print '[app_list]list app succeed!'
-        return (app_info, container_rlt)
+        return (app_info, app_data, container_rlt)
     except Exception,e:
-        raise RuntimeError('list app failed! %s' % e)
+        raise RuntimeError('get app info failed! %s' % e)
 
 def get_app_data(app_id):
     """
@@ -212,10 +224,33 @@ def get_app_data(app_id):
         result = c.fetchone()
         conn.close()
 
-        appname = result[1]
-        app_data = utils.str2dict( base64.b64decode(result[2]) )
+        if result:
+            appname = result[1]
+            app_data = utils.str2dict( base64.b64decode(result[2]) )
 
-        return (appname,app_data)
+            return (appname,app_data)
+        else:
+            return (None,None)
 
     except Exception,e:
         raise RuntimeError('get app data failed! %s' % e)
+
+def get_app_state(app_id):
+    """
+    get app state
+    """
+    try:
+        conn = get_conn()
+        c = conn.cursor()
+        c.execute("SELECT state FROM app WHERE id='{0}' ".format(app_id))
+        result = c.fetchone()
+        conn.close()
+
+        if result:
+            state = result[0]
+            return state
+        else:
+            return None
+
+    except Exception,e:
+        raise RuntimeError('get app state failed! %s' % e)

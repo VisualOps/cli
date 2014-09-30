@@ -1,4 +1,6 @@
 import logging
+import json
+import base64
 from visualops.utils import rpc,utils,db,constant
 #from cliff.lister import Lister
 from cliff.show import ShowOne
@@ -20,24 +22,32 @@ class Info(ShowOne):
 
         if parsed_args.info_app_local:
             print 'Show local app info ....'
-            (app_info, container_info) = db.get_app_info( app_id )
+            (app_info, app_data, container_info) = db.get_app_info( app_id )
 
-            if len(app_info) == 0:
-                print 'Can not found local app %s ' % app_id
+            #1. format and output app info
+            if not app_info or len(app_info) == 0:
+                print "Can not found local app info '%s' " % app_id
                 return ((),())
-
-            #format and output app info
             title  = ['Name','Source Id','Region','State','Create At','Change At']
             header = ['Field','Value']
             app_info = [ title, list(app_info) ] #insert title
             app_info = map(list, zip(*app_info))    #matrix transpose
+            print '\nApp info:'
             print utils.print_prettytable(header, app_info)
 
-            if len(container_info) ==0:
+            #2. format and output app data
+            if not app_data or len(app_data) == 0:
+                print "Can not found local app data '%s' " % app_id
+                return ((),())
+            print '\nApp data:'
+            print json.dumps(utils.str2dict(base64.b64decode(app_data[0])), indent=4) 
+
+
+            #3. output container info
+            if not container_info or len(container_info) ==0:
                 print 'No container'
                 return ((),())
-
-            #output container info
+            print '\nContainer:'
             return (( 'Id', 'Name', 'App Id' ), container_info)
 
         else:
