@@ -920,24 +920,28 @@ def pull(config, repo, tag=None, username=None, password=None, email=None, *args
 
 
 ## Files state
-def create_files(config, container, files):
-    for f in files:
-        path = f.get("key")
-        if not path:
-            utils.error("Unable to read config file path.")
-            continue
-        dir_path = os.path.join(config["config_path"],"docker","files",container)
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-        host_path = os.path.join(dir_path,("%s"%path).replace('/','-'))
-        content = render(config, path, f.get("value",""))
-        try:
-            with open(host_path, 'w') as f:
-                f.write(content)
-            print "Configuration file %s created: %s."%(path,host_path)
-        except Exception as e:
-            utils.error("Unable to store configuration file %s: %s"%(host_path,e))
-    return None, False
+def create_files(config, containers, files):
+    failure = False
+    for container in containers:
+        for f in files:
+            path = f.get("key")
+            if not path:
+                failure = True
+                utils.error("Unable to read config file path.")
+                continue
+            dir_path = os.path.join(config["config_path"],"docker","files",container)
+            if not os.path.exists(dir_path):
+                os.makedirs(dir_path)
+            host_path = os.path.join(dir_path,("%s"%path).replace('/','-'))
+            content = render(config, path, f.get("value",""))
+            try:
+                with open(host_path, 'w') as f:
+                    f.write(content)
+                print "Configuration file %s created: %s."%(path,host_path)
+            except Exception as e:
+                failure = True
+                utils.error("Unable to store configuration file %s: %s"%(host_path,e))
+    return None, failure
 ##
 
 
