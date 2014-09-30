@@ -12,8 +12,18 @@ apt-get install libyaml-dev libpython2.7-dev
 yum install libyaml libyaml-devel python-devel
 
 
-[required python lib]
+[third python lib]
 =====================================================
+
+##required
+* cliff
+* cliff-tablib
+* pyyaml
+
+##optinal
+* virtualenv
+* pudb
+
 
 ##1.install virtualenv (virtual python environment)
 $ pip install virtualenv
@@ -33,19 +43,12 @@ $ . .venv/bin/activate
 ###4.2 formatting extensions for cliff(support html,json,yaml)
 (.venv)$ pip install cliff-tablib
 
-###4.3 YAML parser and emitter for Python
-(.venv)$ pip install pyyaml
-
-###4.4 debugger (optional, only for develop)
-(.venv)$ pip install pudb
-
 
 
 [install]
 =====================================================
-
+(.venv)$ pip install cliff
 (.venv)$ python setup.py install
-
 
 
 [usage]
@@ -56,24 +59,32 @@ $ . .venv/bin/activate
 
 ##2.enter interactive mode
 (.venv)$ visualops
+(visualops) help
 
 ##3.show help
 (.venv)$ visualops -h
 
 ##4.none-interactive mode (already support)
+(.venv)$ visualops -h
+(.venv)$ visualops help stack list
+
 (.venv)$ visualops login
 
 (.venv)$ visualops stack list
-
-(.venv)$ visualops -v stack list
-
-(.venv)$ visualops stack list --debug
-
+(.venv)$ visualops stack list -f csv
+(.venv)$ visualops stack list --filter docker --region ap-northeast-1
 (.venv)$ visualops stack info stack-xxxxxxxx
-
 (.venv)$ visualops stack pull stack-xxxxxxxx
-
 (.venv)$ visualops stack run stack-xxxxxxxx -l
+
+(.venv)$ visualops app list
+(.venv)$ visualops app list --region us-east-1 --filter docker  -l
+(.venv)$ visualops app stop app-xxxxxxxx -l
+(.venv)$ visualops app start app-xxxxxxxx -l
+(.venv)$ visualops app reboot app-xxxxxxxx -l
+(.venv)$ visualops app terminate app-xxxxxxxx -l
+
+(.venv)$ visualops logout
 
 
 
@@ -85,7 +96,6 @@ $ . .venv/bin/activate
 import pudb
 pudb.set_trace()
 </pre>
-
 
 
 [support auto-complete]
