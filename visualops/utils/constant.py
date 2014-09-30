@@ -12,7 +12,7 @@ STATE_APP_STOPPING     = "Stopping"
 STATE_APP_STOPPED      = "Stopped"
 STATE_APP_STARTING     = "Starting"
 STATE_APP_REBOOTING    = "Rebooting"
-STATE_APP_CLONING      = "Cloning"
+#STATE_APP_CLONING      = "Cloning"
 STATE_APP_TERMINATING  = "Terminating"
 STATE_APP_TERMINATED   = "Terminated"
 

@@ -39,6 +39,7 @@ class Stop(Command):
             state = db.get_app_state(appname)
             if not parsed_args.force and state != constant.STATE_APP_RUNNING:
                 raise RuntimeError("App current state is {0}, only support stop 'Running' app!".format(state))
+
             print 'Stopping local app ...'
             #2. update to stopping
             db.stop_app(appname)

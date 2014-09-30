@@ -37,8 +37,11 @@ class Terminate(Command):
         if parsed_args.local:
             #1. check app state
             state = db.get_app_state(appname)
-            if not parsed_args.force and state in [constant.STATE_APP_RUNNING,constant.STATE_APP_TERMINATING]:
+            if state in [constant.STATE_APP_TERMINATED,constant.STATE_APP_TERMINATING]:
                 raise RuntimeError("App current state is {0}, cancel!".format(state))
+            elif not parsed_args.force and not state in [constant.STATE_APP_RUNNING,constant.STATE_APP_STOPPED]:
+                raise RuntimeError("App current state is {0}, only support stop 'Running' or 'Stopped' app!".format(state))
+
             print 'Terminating local app ...'
             #2. update to terminating
             db.terminate_app(appname)

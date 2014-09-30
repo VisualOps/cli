@@ -39,6 +39,7 @@ class Start(Command):
             state = db.get_app_state(appname)
             if not parsed_args.force and state != constant.STATE_APP_STOPPED:
                 raise RuntimeError("App current state is {0}, only support stop 'Stopped' app!".format(state))
+
             print 'Starting local app ...'
             #2. update to starting
             db.start_app(appname)
