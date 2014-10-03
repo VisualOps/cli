@@ -31,8 +31,14 @@ class VisualOpsCLIApp(App):
 
 
 def main(argv=sys.argv[1:]):
-    cliApp = VisualOpsCLIApp()
-    return cliApp.run(argv)
+
+    try:
+        cliApp = VisualOpsCLIApp()
+        return cliApp.run(argv)
+    except KeyboardInterrupt:
+        print '\n'
+        sys.exit(0)
+
 
 
 if __name__ == '__main__':
