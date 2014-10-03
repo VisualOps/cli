@@ -1,6 +1,11 @@
 import re
 from setuptools import setup, find_packages
 
+try:
+    import multiprocessing  # noqa
+except ImportError:
+    pass
+
 file_text = open('visualops/__init__.py').read()
 
 def grep(attrname):
@@ -20,7 +25,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     scripts=[],
-    install_requires=['cliff','pyyaml','docker-py'],
+    install_requires=['cliff','requests','pyyaml','docker-py'],
     entry_points={
         'console_scripts': [
             'visualops = visualops.main:main'
