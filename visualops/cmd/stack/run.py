@@ -156,9 +156,6 @@ class Run(Command):
                                                                                     app_dict["hosts"][hostname][state][container]))
         config["actions"] = actions
 
-        #test
-        raise Result("ERR.STACK.RUN_FAILED", config["appname"])
-
         app = {}
         for hostname in actions:
             for container in actions[hostname]:

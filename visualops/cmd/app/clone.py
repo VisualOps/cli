@@ -162,8 +162,6 @@ class Clone(Command):
                                                                                     app_dict["hosts"][hostname][state][container]))
         config["actions"] = actions
 
-        #test
-        raise Result("ERR.APP.CLONE_FAILED", config["appname"])
 
         app = {}
         for hostname in actions:
@@ -171,5 +169,5 @@ class Clone(Command):
                 app.update(dockervisops.deploy(config, actions[hostname][container]))
         dockervisops.generate_hosts(config, app)
 
-                #save user input parameter to app_dict
+        #save user input parameter to app_dict
         utils.persist_app(actions,app_dict)

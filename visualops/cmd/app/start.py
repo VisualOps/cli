@@ -85,7 +85,5 @@ class Start(Command):
                                 print "Container %s started"%cname
                             else:
                                 utils.error("Unable to start container %s"%container_name)
-        #test
-        raise Result("ERR.APP.START_FAILED", appname)
 
         print "App %s started."%appname

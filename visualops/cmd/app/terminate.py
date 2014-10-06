@@ -85,8 +85,6 @@ class Terminate(Command):
                                 print "Container %s removed"%cname
                             else:
                                 utils.error("Unable to remove container %s"%cname)
-        #test
-        raise Result("ERR.APP.TERMINATE_FAILED", appname)
 
         if boot2docker.has():
             boot2docker.delete(config, appname)

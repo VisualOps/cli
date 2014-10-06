@@ -85,7 +85,5 @@ class Reboot(Command):
                                 print "Container %s restarted"%cname
                             else:
                                 utils.error("Unable to restart container %s"%container_name)
-        #test
-        raise Result("ERR.APP.REBOOT_FAILED", appname)
 
         print "App %s restarted."%appname

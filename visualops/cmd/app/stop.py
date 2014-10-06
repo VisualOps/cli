@@ -83,9 +83,6 @@ class Stop(Command):
                                 print "Container %s stopped"%cname
                             else:
                                 utils.error("Unable to stop container %s"%cname)
-        
-        #test
-        raise Result("ERR.APP.STOP_FAILED", appname)
 
         if boot2docker.has():
             boot2docker.stop(config, appname)
