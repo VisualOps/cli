@@ -5,6 +5,7 @@ import json
 import base64
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,db
+from visualops.utils.Result import Result
 
 
 class Run(Command):
@@ -89,54 +90,25 @@ class Run(Command):
 
         config = utils.gen_config(app.get("name","default-app"))
 
+        is_succeed = False
         try:
+            app['stack_id'] = stack_id
+            app["name"] = config["appname"]
             self.run_stack(config, app)
 
             #save app info into local db
-            app["name"] = config["appname"]
-            db.create_app( config["appname"], config["appname"], stack_id, app['region'], base64.b64encode(utils.dict2str(app)) )
+            db.create_app( config["appname"], config["appname"], stack_id, '', base64.b64encode(utils.dict2str(app)) )
+            is_succeed = True
+        except Result,e:
+            print '!!!Expected error occur %s' % str(e.format())
         except Exception,e:
-            raise RuntimeError('Stack run failed! %s' % e)
-            db.delete_app_info( config["appname"] )
+            print '!!!Unexpected error occur %s' % str(e)
+        finally:
+            if not is_succeed:
+                self.log.debug( '> Clear failed app info in local db' )
+                db.delete_app_info( config["appname"] )
+                raise RuntimeError('Stack run failed!')
 
-
-    # Save user input to app_dict
-    def persist_app(self,actions, app_dict):
-        for (host,v1) in  actions.items():
-            for (container,v2) in v1.items():
-                try:
-                    #save source to target
-                    app_dict_container = app_dict['hosts'][host]['linux.docker.deploy'][container]  #target
-                    actions_container  = actions[host][container]['running']                        #source
-
-                    #1. save count
-                    if actions_container.has_key('count'):
-                        app_dict_container['count'] = actions_container['count']
-
-                    #2. save volume
-                    if actions_container.has_key('binds'):
-                        app_dict_volumes = []
-                        action_volumes   = actions_container['binds']
-                        for (volume,v3) in action_volumes.items():
-                            mountpoint = {}
-                            mountpoint['key']   = volume
-                            mountpoint['value'] = v3['bind']
-                            app_dict_volumes.append(mountpoint)
-                        app_dict_container['volumes'] = app_dict_volumes
-
-                    #3. save port_bindings
-                    if actions_container.has_key('port_bindings'):
-                        app_dict_port_bindings = []
-                        actions_port_bindings  = actions_container['port_bindings']
-                        for (port,v4) in actions_port_bindings.items():
-                            bingding = {}
-                            bingding['key']   = v4['HostPort']
-                            bingding['value'] = port
-                            app_dict_port_bindings.append(bingding)
-                        app_dict_container['port_bindings'] = app_dict_port_bindings
-
-                except Exception,e:
-                    raise RuntimeError("Save user's input failed! %s" % e)
 
     # Run stack
     def run_stack(self, config, app_dict):
@@ -184,11 +156,11 @@ class Run(Command):
                                                                                     app_dict["hosts"][hostname][state][container]))
         config["actions"] = actions
 
-        #save user input parameter to app_dict
-        self.persist_app(actions,app_dict)
-
         app = {}
         for hostname in actions:
             for container in actions[hostname]:
                 app.update(dockervisops.deploy(config, actions[hostname][container]))
         dockervisops.generate_hosts(config, app)
+
+        #save user input parameter to app_dict
+        utils.persist_app(actions,app_dict)

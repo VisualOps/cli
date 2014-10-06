@@ -3,6 +3,7 @@ import json
 
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,db,constant
+from visualops.utils.Result import Result
 
 
 class Terminate(Command):
@@ -35,21 +36,31 @@ class Terminate(Command):
         config = utils.gen_config(appname)
 
         if parsed_args.local:
-            #1. check app state
-            state = db.get_app_state(appname)
-            if state in [constant.STATE_APP_TERMINATED,constant.STATE_APP_TERMINATING]:
-                raise RuntimeError("App current state is {0}, cancel!".format(state))
-            elif not parsed_args.force and not state in [constant.STATE_APP_RUNNING,constant.STATE_APP_STOPPED]:
-                raise RuntimeError("App current state is {0}, only support stop 'Running' or 'Stopped' app!".format(state))
+            is_succeed = False
+            try:
+                #1. check app state
+                state = db.get_app_state(appname)
+                if state in [constant.STATE_APP_TERMINATED,constant.STATE_APP_TERMINATING]:
+                    raise RuntimeError("App current state is {0}, cancel!".format(state))
+                elif not parsed_args.force and not state in [constant.STATE_APP_RUNNING,constant.STATE_APP_STOPPED]:
+                    raise RuntimeError("App current state is {0}, only support stop 'Running' or 'Stopped' app!".format(state))
 
-            print 'Terminating local app ...'
-            #2. update to terminating
-            db.terminate_app(appname)
-            #3. do action
-            self.terminate_app(config, appname, app)
-            #4. update to terminated
-            db.terminate_app(appname,True)
-            print 'Local app %s terminated!' % appname
+                print 'Terminating local app ...'
+                #2. update to terminating
+                db.terminate_app(appname)
+                #3. do action
+                self.terminate_app(config, appname, app)
+                #4. update to terminated
+                db.terminate_app(appname,True)
+                print 'Local app %s terminated!' % appname
+                is_succeed = True
+            except Result,e:
+                print '!!!Expected error occur %s' % str(e.format())
+            except Exception,e:
+                print '!!!Unexpected error occur %s' % str(e)
+            finally:
+                if not is_succeed:
+                    raise RuntimeError('App terminate failed!')
         else:
             print 'Terminate remote app ...(not support yet, please try -l)'
             return
@@ -74,6 +85,7 @@ class Terminate(Command):
                                 print "Container %s removed"%cname
                             else:
                                 utils.error("Unable to remove container %s"%cname)
+
         if boot2docker.has():
             boot2docker.delete(config, appname)
         print "App %s terminated."%appname

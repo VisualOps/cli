@@ -3,6 +3,7 @@ import json
 
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,db,constant
+from visualops.utils.Result import Result
 
 
 class Reboot(Command):
@@ -35,19 +36,29 @@ class Reboot(Command):
         config = utils.gen_config(appname)
 
         if parsed_args.local:
-            #1. check app state
-            state = db.get_app_state(appname)
-            if not parsed_args.force and state != constant.STATE_APP_RUNNING:
-                raise RuntimeError("App current state is {0}, only support reboot 'Running' app!".format(state))
+            is_succeed = False
+            try:
+                #1. check app state
+                state = db.get_app_state(appname)
+                if not parsed_args.force and state != constant.STATE_APP_RUNNING:
+                    raise RuntimeError("App current state is {0}, only support reboot 'Running' app!".format(state))
 
-            print 'Rebooting local app ...'
-            #2. update to rebooting
-            db.reboot_app(appname)
-            #3. do action
-            self.reboot_app(config, appname, app)
-            #4. update to running
-            db.reboot_app(appname,True)
-            print 'Local app %s rebooted!' % appname
+                print 'Rebooting local app ...'
+                #2. update to rebooting
+                db.reboot_app(appname)
+                #3. do action
+                self.reboot_app(config, appname, app)
+                #4. update to running
+                db.reboot_app(appname,True)
+                print 'Local app %s rebooted!' % appname
+                is_succeed = True
+            except Result,e:
+                print '!!!Expected error occur %s' % str(e.format())
+            except Exception,e:
+                print '!!!Unexpected error occur %s' % str(e)
+            finally:
+                if not is_succeed:
+                    raise RuntimeError('App reboot failed!')
         else:
             print 'Reboot remote app ...(not support yet, please try -l)'
             return
@@ -74,4 +85,5 @@ class Reboot(Command):
                                 print "Container %s restarted"%cname
                             else:
                                 utils.error("Unable to restart container %s"%container_name)
+
         print "App %s restarted."%appname
