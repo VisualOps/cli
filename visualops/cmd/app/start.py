@@ -3,6 +3,7 @@ import json
 
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,db,constant
+from visualops.utils.Result import Result
 
 
 class Start(Command):
@@ -35,19 +36,29 @@ class Start(Command):
         config = utils.gen_config(appname)
 
         if parsed_args.local:
-            #1. check app state
-            state = db.get_app_state(appname)
-            if not parsed_args.force and state != constant.STATE_APP_STOPPED:
-                raise RuntimeError("App current state is {0}, only support stop 'Stopped' app!".format(state))
+            is_succeed = False
+            try:
+                #1. check app state
+                state = db.get_app_state(appname)
+                if not parsed_args.force and state != constant.STATE_APP_STOPPED:
+                    raise RuntimeError("App current state is {0}, only support stop 'Stopped' app!".format(state))
 
-            print 'Starting local app ...'
-            #2. update to starting
-            db.start_app(appname)
-            #3. do action
-            self.start_app(config, appname, app)
-            #4. update to running
-            db.start_app(appname,True)
-            print 'Local app %s started!' % appname
+                print 'Starting local app ...'
+                #2. update to starting
+                db.start_app(appname)
+                #3. do action
+                self.start_app(config, appname, app)
+                #4. update to running
+                db.start_app(appname,True)
+                print 'Local app %s started!' % appname
+                is_succeed = True
+            except Result,e:
+                print '!!!Expected error occur %s' % str(e.format())
+            except Exception,e:
+                print '!!!Unexpected error occur %s' % str(e)
+            finally:
+                if not is_succeed:
+                    raise RuntimeError('App start failed!')
         else:
             print 'Start remote app ...(not support yet, please try -l)'
             return
@@ -74,4 +85,5 @@ class Start(Command):
                                 print "Container %s started"%cname
                             else:
                                 utils.error("Unable to start container %s"%container_name)
+
         print "App %s started."%appname

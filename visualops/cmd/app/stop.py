@@ -3,7 +3,7 @@ import json
 
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,db,constant
-
+from visualops.utils.Result import Result
 
 
 class Stop(Command):
@@ -35,19 +35,29 @@ class Stop(Command):
 
         config = utils.gen_config(appname)
         if parsed_args.local:
-            #1. check app state
-            state = db.get_app_state(appname)
-            if not parsed_args.force and state != constant.STATE_APP_RUNNING:
-                raise RuntimeError("App current state is {0}, only support stop 'Running' app!".format(state))
+            is_succeed = False
+            try:
+                #1. check app state
+                state = db.get_app_state(appname)
+                if not parsed_args.force and state != constant.STATE_APP_RUNNING:
+                    raise RuntimeError("App current state is {0}, only support stop 'Running' app!".format(state))
 
-            print 'Stopping local app ...'
-            #2. update to stopping
-            db.stop_app(appname)
-            #3. do action
-            self.stop_app(config, appname, app)
-            #4. update to stopped
-            db.stop_app(appname,True)
-            print 'Local app %s stopped!' % appname
+                print 'Stopping local app ...'
+                #2. update to stopping
+                db.stop_app(appname)
+                #3. do action
+                self.stop_app(config, appname, app)
+                #4. update to stopped
+                db.stop_app(appname,True)
+                print 'Local app %s stopped!' % appname
+                is_succeed = True
+            except Result,e:
+                print '!!!Expected error occur %s' % str(e.format())
+            except Exception,e:
+                print '!!!Unexpected error occur %s' % str(e)
+            finally:
+                if not is_succeed:
+                    raise RuntimeError('App stop failed!')
         else:
             print 'Stopping remote app ...(not support yet, please try -l)'
             return
@@ -73,6 +83,7 @@ class Stop(Command):
                                 print "Container %s stopped"%cname
                             else:
                                 utils.error("Unable to stop container %s"%cname)
+
         if boot2docker.has():
             boot2docker.stop(config, appname)
         print "App %s stopped."%appname

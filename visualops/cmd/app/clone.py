@@ -5,6 +5,7 @@ import base64
 
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,rpc,constant,db
+from visualops.utils.Result import Result
 
 
 class Clone(Command):
@@ -97,15 +98,23 @@ class Clone(Command):
             print app
 
             config = utils.gen_config(app.get("name","default-app"))
+            is_succeed = False
             try:
-                #insert app to local db
-                self.clone_app(config, app)
+                app['src_app_id'] = app_id
                 app["name"] = config["appname"]
+                self.clone_app(config, app)
+                #insert app to local db
                 db.create_app(config["appname"], config["appname"], app_id, app['region'], base64.b64encode(utils.dict2str(app)) )
+                is_succeed = True
+            except Result,e:
+                print '!!!Expected error occur %s' % str(e.format())
             except Exception,e:
-                raise RuntimeError('Clone app to local failed! %s' % e)
-                db.delete_app_info( config["appname"] )
-
+                print '!!!Unexpected error occur %s' % str(e)
+            finally:
+                if not is_succeed:
+                    self.log.debug( '> Clear failed app info in local db' )
+                    db.delete_app_info( config["appname"] )
+                    raise RuntimeError('Clone app to local failed!')
 
     # Clone app
     def clone_app(self, config, app_dict):
@@ -152,8 +161,13 @@ class Clone(Command):
                                                                                     hostname,
                                                                                     app_dict["hosts"][hostname][state][container]))
         config["actions"] = actions
+
+
         app = {}
         for hostname in actions:
             for container in actions[hostname]:
                 app.update(dockervisops.deploy(config, actions[hostname][container]))
         dockervisops.generate_hosts(config, app)
+
+        #save user input parameter to app_dict
+        utils.persist_app(actions,app_dict)
