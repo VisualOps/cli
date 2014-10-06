@@ -5,6 +5,7 @@ import json
 import base64
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,db
+from visualops.utils.Result import Result
 
 
 class Run(Command):
@@ -89,15 +90,24 @@ class Run(Command):
 
         config = utils.gen_config(app.get("name","default-app"))
 
+        is_succeed = False
         try:
+            app['stack_id'] = stack_id
+            app["name"] = config["appname"]
             self.run_stack(config, app)
 
             #save app info into local db
-            app["name"] = config["appname"]
             db.create_app( config["appname"], config["appname"], stack_id, '', base64.b64encode(utils.dict2str(app)) )
+            is_succeed = True
+        except Result,e:
+            print '!!!Expected error occur %s' % str(e.format())
         except Exception,e:
-            raise RuntimeError('Stack run failed! %s' % e)
-            db.delete_app_info( config["appname"] )
+            print '!!!Unexpected error occur %s' % str(e)
+        finally:
+            if not is_succeed:
+                self.log.debug( '> Clear failed app info in local db' )
+                db.delete_app_info( config["appname"] )
+                raise RuntimeError('Stack run failed!')
 
 
     # Save user input to app_dict
@@ -184,11 +194,11 @@ class Run(Command):
                                                                                     app_dict["hosts"][hostname][state][container]))
         config["actions"] = actions
 
-        #save user input parameter to app_dict
-        self.persist_app(actions,app_dict)
-
         app = {}
         for hostname in actions:
             for container in actions[hostname]:
                 app.update(dockervisops.deploy(config, actions[hostname][container]))
         dockervisops.generate_hosts(config, app)
+
+        #save user input parameter to app_dict
+        self.persist_app(actions,app_dict)
