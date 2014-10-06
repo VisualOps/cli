@@ -110,44 +110,6 @@ class Run(Command):
                 raise RuntimeError('Stack run failed!')
 
 
-    # Save user input to app_dict
-    def persist_app(self,actions, app_dict):
-        for (host,v1) in  actions.items():
-            for (container,v2) in v1.items():
-                try:
-                    #save source to target
-                    app_dict_container = app_dict['hosts'][host]['linux.docker.deploy'][container]  #target
-                    actions_container  = actions[host][container]['running']                        #source
-
-                    #1. save count
-                    if actions_container.has_key('count'):
-                        app_dict_container['count'] = actions_container['count']
-
-                    #2. save volume
-                    if actions_container.has_key('binds'):
-                        app_dict_volumes = []
-                        action_volumes   = actions_container['binds']
-                        for (volume,v3) in action_volumes.items():
-                            mountpoint = {}
-                            mountpoint['key']   = volume
-                            mountpoint['value'] = v3['bind']
-                            app_dict_volumes.append(mountpoint)
-                        app_dict_container['volumes'] = app_dict_volumes
-
-                    #3. save port_bindings
-                    if actions_container.has_key('port_bindings'):
-                        app_dict_port_bindings = []
-                        actions_port_bindings  = actions_container['port_bindings']
-                        for (port,v4) in actions_port_bindings.items():
-                            bingding = {}
-                            bingding['key']   = v4['HostPort']
-                            bingding['value'] = port
-                            app_dict_port_bindings.append(bingding)
-                        app_dict_container['port_bindings'] = app_dict_port_bindings
-
-                except Exception,e:
-                    raise RuntimeError("Save user's input failed! %s" % e)
-
     # Run stack
     def run_stack(self, config, app_dict):
         config["appname"] = utils.user_param(config, "Enter app name",config["appname"])
@@ -194,6 +156,9 @@ class Run(Command):
                                                                                     app_dict["hosts"][hostname][state][container]))
         config["actions"] = actions
 
+        #test
+        raise Result("ERR.STACK.RUN_FAILED", config["appname"])
+
         app = {}
         for hostname in actions:
             for container in actions[hostname]:
@@ -201,4 +166,4 @@ class Run(Command):
         dockervisops.generate_hosts(config, app)
 
         #save user input parameter to app_dict
-        self.persist_app(actions,app_dict)
+        utils.persist_app(actions,app_dict)
