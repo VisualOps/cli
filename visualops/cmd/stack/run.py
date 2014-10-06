@@ -94,7 +94,7 @@ class Run(Command):
 
             #save app info into local db
             app["name"] = config["appname"]
-            db.create_app( config["appname"], config["appname"], stack_id, app['region'], base64.b64encode(utils.dict2str(app)) )
+            db.create_app( config["appname"], config["appname"], stack_id, '', base64.b64encode(utils.dict2str(app)) )
         except Exception,e:
             raise RuntimeError('Stack run failed! %s' % e)
             db.delete_app_info( config["appname"] )

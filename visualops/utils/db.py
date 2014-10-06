@@ -143,6 +143,8 @@ def terminate_app(app_id, is_finished=False):
     """
     state = constant.STATE_APP_TERMINATED if is_finished else constant.STATE_APP_TERMINATING
     app_update_state(app_id, state)
+    if is_finished:
+        delete_app_info(app_id)
 
 
 def get_app_list(region_name=None,filter_name=None):
@@ -160,9 +162,9 @@ def get_app_list(region_name=None,filter_name=None):
         if filter_name:
             cond.append( "lower(name) like '%{0}%' ".format(filter_name.lower()) )
         if len(cond) > 0:
-            where_clause = 'where ' + 'and '.join( cond )
+            where_clause = 'and ' + 'and '.join( cond )
 
-        sqlcmd = "SELECT name,source_id,region,state,create_at,change_at FROM app %s " % where_clause
+        sqlcmd = "SELECT name,source_id,region,state,create_at,change_at FROM app where state<>'Terminated' %s " % where_clause
         log = logging.getLogger(__name__)
         log.debug('> sql : %s' % sqlcmd)
 
