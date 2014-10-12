@@ -1252,7 +1252,7 @@ def generate_hosts(config, app):
 
 ## renderer
 def list_containers(host):
-    return [c for container in host for c in host[container]["containers"]]
+    return [c for container in host for c in host[container].get("containers",[])]
 
 def render(config, filename, content):
     rendered = ""
