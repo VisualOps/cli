@@ -1,3 +1,5 @@
+# Copyright 2014 MadeiraCloud LTD.
+
 import logging
 
 from cliff.command import Command

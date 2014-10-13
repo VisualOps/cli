@@ -1,7 +1,7 @@
 '''
 Docker module (docker-py wrapper)
 @author: Thibault BRONCHAIN
-(c) 2014 - MadeiraCloud LTD.
+Copyright 2014 MadeiraCloud LTD.
 
 note: Part of these functions have been extracted and/or modified
       from the Salt (SaltStack) Docker module
@@ -853,8 +853,8 @@ def running(config,
         port = (ports.pop() if ports else None)
         port_binding = (port_bindings.pop() if port_bindings else None)
         ret = installed(config,
-            container,image,entrypoint=entrypoint,command=command,environment=environment,
-            ports=port,volumes=volumes,mem_limit=mem_limit,cpu_shares=cpu_shares,force=force)
+                        container,image,entrypoint=entrypoint,command=command,environment=environment,ports=port,
+                        volumes=volumes,mem_limit=mem_limit,cpu_shares=cpu_shares,force=force,hostname=container)
         if ret:
             started = start(config,
                 container, binds=binds, port_bindings=port_binding,
