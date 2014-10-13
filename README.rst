@@ -1,8 +1,10 @@
 visualops
-==
+=========
 
 ``visualops`` is a command-line interface for VisualOps. It allows you to
 deploy the same stack on your laptop, or in the cloud
+
+note: output shown in this documentation is indicative only, please do not refer to it.
 
 Install
 -------
@@ -81,8 +83,11 @@ Push a stack to VisualOps
 
     Done!
 
+run
+~~~~~
+
 run [--local] [-lpq] [-r chroot] [-v [/host:/container]] [-b [hostname:container=source_port:dest_port]] [-m memory_size] [-p cpu-shares] [-n containers_number] [-c config_directory]
-~~~~~~
+
 
 Deploy the stack locally, or in the cloud
 
@@ -223,8 +228,10 @@ Reboot a local app or some containers
 
     Done! Successfully reboot node-dev.
 
-clone [-lpq] [-r chroot] [-v [/host:/container]] [-b [hostname:container=source_port:dest_port]] [-m memory_size] [-p cpu-shares] [-n containers_number] [-c config_directory]
+clone
 ~~~~~~
+
+clone [-lpq] [-r chroot] [-v [/host:/container]] [-b [hostname:container=source_port:dest_port]] [-m memory_size] [-p cpu-shares] [-n containers_number] [-c config_directory]
 
 Clone a remote app to local
 
@@ -259,53 +266,3 @@ Clone a remote app to local
 
 Details:
 Same as run
-
-
-
-
-
-
-
-
-
-Config object format
-~~~~~~~
-config = {
-    "interactive": True/False,
-
-    "volumes": {
-        "hostname": {
-            "container": {
-                "/foo": "/bar",
-            },
-        },
-    },
-
-    "cpu_shares": {
-        "hostname": {
-            "container": "1",
-        },
-    },
-
-    "mem_limit": {
-        "hostname": {
-            "container": "512m",
-        },
-    },
-
-    "chroot": "/path",
-
-    "port_bindings": {
-        "hostnameA": {
-            "containerA": {
-                "0.0.0.0:80": "80/tcp",
-                "6666": "6666/udp",
-                "127.0.0.1:7777": "7777",
-                "9999": "9999/tcp",
-                "23": "23",
-            }
-        }
-    }
-
-    "config_path": "/home/user/.visualops",
-}

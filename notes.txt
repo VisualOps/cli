@@ -1,0 +1,41 @@
+Config object format
+~~~~~~~
+config = {
+    "interactive": True/False,
+
+    "volumes": {
+        "hostname": {
+            "container": {
+                "/foo": "/bar",
+            },
+        },
+    },
+
+    "cpu_shares": {
+        "hostname": {
+            "container": "1",
+        },
+    },
+
+    "mem_limit": {
+        "hostname": {
+            "container": "512m",
+        },
+    },
+
+    "chroot": "/path",
+
+    "port_bindings": {
+        "hostnameA": {
+            "containerA": {
+                "0.0.0.0:80": "80/tcp",
+                "6666": "6666/udp",
+                "127.0.0.1:7777": "7777",
+                "9999": "9999/tcp",
+                "23": "23",
+            }
+        }
+    }
+
+    "config_path": "/home/user/.visualops",
+}
