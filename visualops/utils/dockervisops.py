@@ -1253,7 +1253,7 @@ def generate_hosts(config, app):
 
 ## renderer
 def list_containers(host):
-    return [c for container in host for c in host[container].get("containers",[])]
+    return [c for container in host for c in host[container].get("running",{}).get("containers",[])]
 
 def render(config, filename, content):
     rendered = ""
@@ -1276,6 +1276,8 @@ Multiple containers found on instance %s.
 Note: if you are not sure, correctly binded your ports,
       and have an external access to your machine,
       you can try to use your public IP address.
+
+Warning: Using localhost (or 127.0.0.1) won't work in most cases
 
 Context: file %s, line %s: %s
 Please, specify which container to use: %s
