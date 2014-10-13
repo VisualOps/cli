@@ -1,3 +1,5 @@
+# Copyright 2014 MadeiraCloud LTD.
+
 import logging
 from visualops.utils import db
 from cliff.command import Command

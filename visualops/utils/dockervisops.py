@@ -1,7 +1,7 @@
 '''
 Docker module (docker-py wrapper)
 @author: Thibault BRONCHAIN
-(c) 2014 - MadeiraCloud LTD.
+Copyright 2014 MadeiraCloud LTD.
 
 note: Part of these functions have been extracted and/or modified
       from the Salt (SaltStack) Docker module
@@ -853,8 +853,8 @@ def running(config,
         port = (ports.pop() if ports else None)
         port_binding = (port_bindings.pop() if port_bindings else None)
         ret = installed(config,
-            container,image,entrypoint=entrypoint,command=command,environment=environment,
-            ports=port,volumes=volumes,mem_limit=mem_limit,cpu_shares=cpu_shares,force=force)
+                        container,image,entrypoint=entrypoint,command=command,environment=environment,ports=port,
+                        volumes=volumes,mem_limit=mem_limit,cpu_shares=cpu_shares,force=force,hostname=container)
         if ret:
             started = start(config,
                 container, binds=binds, port_bindings=port_binding,
@@ -956,7 +956,8 @@ def _create_files_volumes(config, state_params, exec_params):
         dir_path = os.path.join(config["config_path"],"docker","files",state_params["container"])
         host_path = os.path.join(dir_path,("%s"%path).replace('/','-'))
         volumes.append({"key":host_path,"value":path})
-    return exec_params.get("volumes",[])+volumes
+    exec_params["volumes"] = exec_params.get("volumes",[])+volumes
+    return exec_params
 
 def _replace_params(config, hostname, addin, param):
     config.setdefault(param,{})
@@ -985,8 +986,8 @@ def _convert_running(config, appname, hostname, addin):
 
             # get user input
             ui = utils.user_param(config,
-                                  "Update port binding for %s (host=container): %s=%s"%(addin["container"],key,value),
-                                  (None
+                                  "Update port binding for %s (host=container)"%addin["container"],
+                                  ("%s=%s"%(key,value)
                                    if key not in config["port_bindings"][hostname].get(addin["container"],{})
                                    else "%s=%s"%((key if key else ""),(value if value else ""))))
             # parse result
@@ -1026,8 +1027,8 @@ def _convert_running(config, appname, hostname, addin):
 
             # get user input
             ui = utils.user_param(config,
-                                  "Update mount point for %s: %s=%s"%(addin["container"],key,value),
-                                  (None
+                                  "Update mount point for %s"%addin["container"],
+                                  ("%s=%s"%(key,value)
                                    if key not in config["volumes"][hostname].get(addin["container"],{})
                                    else "%s=%s"%((key if key else ""),(value if value else ""))))
             # parse result
@@ -1080,8 +1081,8 @@ def _convert_running(config, appname, hostname, addin):
     if addin.get("cpu_shares"):
         # get user input
         ui = utils.user_param(config,
-                              "Update CPU shares for %s: %s"%(addin["container"],addin.get("cpu_shares")),
-                              (None
+                              "Update CPU shares for %s"%addin["container"],
+                              ("%s"%(addin.get("cpu_shares"))
                                if addin["container"] not in config["cpu_shares"][hostname]
                                else addin.get("cpu_shares")))
         # parse result
@@ -1091,8 +1092,8 @@ def _convert_running(config, appname, hostname, addin):
     if addin.get("mem_limit"):
         # get user input
         ui = utils.user_param(config,
-                              "Update memory limit for %s: %s"%(addin["container"],addin.get("mem_limit")),
-                              (None
+                              "Update memory limit for %s"%addin["container"],
+                              ("%s"%(addin.get("mem_limit"))
                                if addin["container"] not in config["mem_limit"][hostname]
                                else addin.get("mem_limit")))
         # parse result
@@ -1252,7 +1253,7 @@ def generate_hosts(config, app):
 
 ## renderer
 def list_containers(host):
-    return [c for container in host for c in host[container].get("containers",[])]
+    return [c for container in host for c in host[container].get("running",{}).get("containers",[])]
 
 def render(config, filename, content):
     rendered = ""
@@ -1272,7 +1273,11 @@ def render(config, filename, content):
                 ip = utils.user_param(config,
                                       '''
 Multiple containers found on instance %s.
-Note: if you are not sure, and correctly binded your ports, you can try to leave as default.
+Note: if you are not sure, correctly binded your ports,
+      and have an external access to your machine,
+      you can try to use your public IP address.
+
+Warning: Using localhost (or 127.0.0.1) won't work in most cases
 
 Context: file %s, line %s: %s
 Please, specify which container to use: %s

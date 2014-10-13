@@ -1,5 +1,6 @@
 '''
 note: AppService api wrapper
+Copyright 2014 MadeiraCloud LTD.
 '''
 
 import requests

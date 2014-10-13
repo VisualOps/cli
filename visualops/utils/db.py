@@ -1,5 +1,6 @@
 '''
 note: Local db operation wrapper
+Copyright 2014 MadeiraCloud LTD.
 '''
 
 import sqlite3

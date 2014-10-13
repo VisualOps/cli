@@ -1,3 +1,5 @@
+# Copyright 2014 MadeiraCloud LTD.
+
 import logging
 from visualops.utils import rpc,utils,db
 from cliff.lister import Lister

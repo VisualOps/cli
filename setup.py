@@ -1,3 +1,5 @@
+# Copyright 2014 MadeiraCloud LTD.
+
 import re
 from setuptools import setup, find_packages
 

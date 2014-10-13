@@ -1,7 +1,7 @@
 '''
 Boot2docker module (boot2docker wrapper)
 @author: Thibault BRONCHAIN
-(c) 2014 - MadeiraCloud LTD.
+Copyright 2014 MadeiraCloud LTD.
 '''
 
 import subprocess

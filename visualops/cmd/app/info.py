@@ -1,3 +1,5 @@
+# Copyright 2014 MadeiraCloud LTD.
+
 import logging
 import json
 import base64
