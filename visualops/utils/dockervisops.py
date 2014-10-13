@@ -956,7 +956,8 @@ def _create_files_volumes(config, state_params, exec_params):
         dir_path = os.path.join(config["config_path"],"docker","files",state_params["container"])
         host_path = os.path.join(dir_path,("%s"%path).replace('/','-'))
         volumes.append({"key":host_path,"value":path})
-    return exec_params.get("volumes",[])+volumes
+    exec_params["volumes"] = exec_params.get("volumes",[])+volumes
+    return exec_params
 
 def _replace_params(config, hostname, addin, param):
     config.setdefault(param,{})
@@ -985,8 +986,8 @@ def _convert_running(config, appname, hostname, addin):
 
             # get user input
             ui = utils.user_param(config,
-                                  "Update port binding for %s (host=container): %s=%s"%(addin["container"],key,value),
-                                  (None
+                                  "Update port binding for %s (host=container)"
+                                  ("%s=%s"%(addin["container"],key,value)
                                    if key not in config["port_bindings"][hostname].get(addin["container"],{})
                                    else "%s=%s"%((key if key else ""),(value if value else ""))))
             # parse result
@@ -1026,8 +1027,8 @@ def _convert_running(config, appname, hostname, addin):
 
             # get user input
             ui = utils.user_param(config,
-                                  "Update mount point for %s: %s=%s"%(addin["container"],key,value),
-                                  (None
+                                  "Update mount point for %s",
+                                  ("%s=%s"%(addin["container"],key,value)
                                    if key not in config["volumes"][hostname].get(addin["container"],{})
                                    else "%s=%s"%((key if key else ""),(value if value else ""))))
             # parse result
@@ -1080,8 +1081,8 @@ def _convert_running(config, appname, hostname, addin):
     if addin.get("cpu_shares"):
         # get user input
         ui = utils.user_param(config,
-                              "Update CPU shares for %s: %s"%(addin["container"],addin.get("cpu_shares")),
-                              (None
+                              "Update CPU shares for %s",
+                              ("%s"%(addin["container"],addin.get("cpu_shares"))
                                if addin["container"] not in config["cpu_shares"][hostname]
                                else addin.get("cpu_shares")))
         # parse result
@@ -1091,8 +1092,8 @@ def _convert_running(config, appname, hostname, addin):
     if addin.get("mem_limit"):
         # get user input
         ui = utils.user_param(config,
-                              "Update memory limit for %s: %s"%(addin["container"],addin.get("mem_limit")),
-                              (None
+                              "Update memory limit for %s",
+                              ("%s"%(addin["container"],addin.get("mem_limit"))
                                if addin["container"] not in config["mem_limit"][hostname]
                                else addin.get("mem_limit")))
         # parse result

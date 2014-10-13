@@ -116,10 +116,10 @@ def warning(*objs):
 
 def user_param(config, text, default):
     if not config.get("interactive"): return default
-    print( "%s [%s]: "%(text,default) )
+    print("%s (use '-' for None) [%s]: "%(text,default))
     res = raw_input().strip(' \t\n\r')
-    return (res if res else default)
-
+    res = (res if res else default)
+    return (res if res != "-" else None)
 
 def dict2yaml(data):
     rlt = yaml.safe_dump(data)
