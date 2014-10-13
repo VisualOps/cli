@@ -986,8 +986,8 @@ def _convert_running(config, appname, hostname, addin):
 
             # get user input
             ui = utils.user_param(config,
-                                  "Update port binding for %s (host=container)"
-                                  ("%s=%s"%(addin["container"],key,value)
+                                  "Update port binding for %s (host=container)"%addin["container"],
+                                  ("%s=%s"%(key,value)
                                    if key not in config["port_bindings"][hostname].get(addin["container"],{})
                                    else "%s=%s"%((key if key else ""),(value if value else ""))))
             # parse result
@@ -1027,8 +1027,8 @@ def _convert_running(config, appname, hostname, addin):
 
             # get user input
             ui = utils.user_param(config,
-                                  "Update mount point for %s",
-                                  ("%s=%s"%(addin["container"],key,value)
+                                  "Update mount point for %s"%addin["container"],
+                                  ("%s=%s"%(key,value)
                                    if key not in config["volumes"][hostname].get(addin["container"],{})
                                    else "%s=%s"%((key if key else ""),(value if value else ""))))
             # parse result
@@ -1081,8 +1081,8 @@ def _convert_running(config, appname, hostname, addin):
     if addin.get("cpu_shares"):
         # get user input
         ui = utils.user_param(config,
-                              "Update CPU shares for %s",
-                              ("%s"%(addin["container"],addin.get("cpu_shares"))
+                              "Update CPU shares for %s"%addin["container"],
+                              ("%s"%(addin.get("cpu_shares"))
                                if addin["container"] not in config["cpu_shares"][hostname]
                                else addin.get("cpu_shares")))
         # parse result
@@ -1092,8 +1092,8 @@ def _convert_running(config, appname, hostname, addin):
     if addin.get("mem_limit"):
         # get user input
         ui = utils.user_param(config,
-                              "Update memory limit for %s",
-                              ("%s"%(addin["container"],addin.get("mem_limit"))
+                              "Update memory limit for %s"%addin["container"],
+                              ("%s"%(addin.get("mem_limit"))
                                if addin["container"] not in config["mem_limit"][hostname]
                                else addin.get("mem_limit")))
         # parse result
@@ -1273,7 +1273,9 @@ def render(config, filename, content):
                 ip = utils.user_param(config,
                                       '''
 Multiple containers found on instance %s.
-Note: if you are not sure, and correctly binded your ports, you can try to leave as default.
+Note: if you are not sure, correctly binded your ports,
+      and have an external access to your machine,
+      you can try to use your public IP address.
 
 Context: file %s, line %s: %s
 Please, specify which container to use: %s
