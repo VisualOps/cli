@@ -109,7 +109,7 @@ def delete_app_info(app_id):
         c.execute("DELETE FROM container WHERE app_id='{0}'".format(app_id))
         c.execute("DELETE FROM app WHERE id='{0}'".format(app_id))
         conn.commit()
-        print 'clear old app %s in db succeed!' % app_id
+        #print 'clear old app %s in db succeed!' % app_id
     except Exception, e:
         raise RuntimeError('clear old app %s in db failed! %s' % (app_id,e))
 
