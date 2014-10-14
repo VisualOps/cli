@@ -130,11 +130,11 @@ def start_app(app_id, is_finished=False):
     app_update_state(app_id, state)
 
 
-def reboot_app(app_id, is_finished=False):
+def restart_app(app_id, is_finished=False):
     """
     update app state to 'Running'
     """
-    state = constant.STATE_APP_RUNNING if is_finished else constant.STATE_APP_REBOOTING
+    state = constant.STATE_APP_RUNNING if is_finished else constant.STATE_APP_RESTARTING
     app_update_state(app_id, state)
 
 
