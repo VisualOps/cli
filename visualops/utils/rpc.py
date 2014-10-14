@@ -31,7 +31,7 @@ def _call(url, method, params):
 
 ### session operation ###
 def login(username, password):
-	params = [username, password]
+	params = [username, password, True]
 	return _call('session', 'login', params)
 
 def logout(username, session_id):
