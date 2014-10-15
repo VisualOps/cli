@@ -113,7 +113,7 @@ class Run(Command):
 
 
 # Run stack
-def run_stack(config, app_dict):
+def run_stack(config, app_dict, force=True):
     config["appname"] = utils.user_param(config, "Enter app name",config["appname"])
     config["dirs"] = {
         "containers": os.path.join(config["config_path"],"docker","containers"),
@@ -152,6 +152,7 @@ def run_stack(config, app_dict):
         for state in app_dict["hosts"][hostname]:
             if state == "linux.docker.deploy":
                 for container in app_dict["hosts"][hostname][state]:
+                    app_dict["hosts"][hostname][state][container]["force"] = force
                     actions[hostname][container] = (dockervisops.preproc_deploy(config,
                                                                                 config["appname"],
                                                                                 hostname,

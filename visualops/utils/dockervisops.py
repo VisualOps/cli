@@ -7,6 +7,7 @@ note: Part of these functions have been extracted and/or modified
       from the Salt (SaltStack) Docker module
 '''
 
+import time
 import json
 import os
 import docker
@@ -686,7 +687,7 @@ def installed(config,
               dns=None,
               volumes=None,
               volumes_from=None,
-              force=False,
+              force=True,
               *args, **kwargs):
     '''
     Ensure that a container with the given name exists;
@@ -743,9 +744,12 @@ def installed(config,
         utils.error("Image not found.")
         return None
     cinfos = _get_container_infos(config, name)
-    if cinfos:
+    if cinfos and force:
         remove_container(config, container=name,force=True)
         print "Old container removed."
+    elif not force:
+        print "Container found: %s."%cinfos.get("Id")
+        return cinfos
 
     dports, dvolumes, denvironment, de = {}, [], {}, {}
     if not ports:
@@ -820,7 +824,7 @@ def running(config,
             publish_all_ports=False,
             links=None,
             port_bindings=None,
-            force=False,
+            force=True,
             hostname=None,
             *args, **kwargs):
     '''
@@ -1181,6 +1185,7 @@ _deploy = {
             'cpu_shares'    : 'cpu_shares',
             'ports'         : 'ports',
             'hostname'      : 'hostname',
+            'force'         : 'force',
             # running
 #            'publish_all_ports': 'publish_all_ports',
             'binds'         : 'binds',
