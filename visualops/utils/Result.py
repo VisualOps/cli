@@ -47,9 +47,9 @@ class Result(Exception):
                 'code' : 310,
                 'msg' : 'App {0} start failed!'
             },
-            'REBOOT_FAILED' : {
+            'RESTART_FAILED' : {
                 'code' : 320,
-                'msg' : 'App {0} reboot failed!'
+                'msg' : 'App {0} restart failed!'
             },
             'TERMINATE_FAILED' : {
                 'code' : 330,
