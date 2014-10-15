@@ -72,6 +72,7 @@ class Restart(Command):
         if boot2docker.has():
             boot2docker.run(config, appname)
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appname))
+        app = {}
         for hostname in app_dict.get("hosts",{}):
             for state in app_dict["hosts"][hostname]:
                 if state == "linux.docker.deploy":
@@ -81,11 +82,13 @@ class Restart(Command):
                                       if not app_dict["hosts"][hostname][state][container].get("count")
                                       else ["%s_%s"%(container_name,i)
                                             for i in range(1,int(app_dict["hosts"][hostname][state][container]["count"])+1)])
-                        print containers
                         for cname in containers:
                             if dockervisops.restart(config, cname) is True:
+                                app[cname] = dockervisops.get_container_infos(config,cname)
                                 print "Container %s restarted"%cname
                             else:
                                 utils.error("Unable to restart container %s"%container_name)
+
+        dockervisops.generate_hosts(config, app)
 
         print "App %s restarted."%appname
