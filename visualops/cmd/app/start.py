@@ -72,6 +72,7 @@ class Start(Command):
         if boot2docker.has():
             boot2docker.run(config, appname)
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appname))
+        app = {}
         for hostname in app_dict.get("hosts",{}):
             for state in app_dict["hosts"][hostname]:
                 if state == "linux.docker.deploy":
@@ -83,8 +84,11 @@ class Start(Command):
                                             for i in range(1,int(app_dict["hosts"][hostname][state][container]["count"])+1)])
                         for cname in containers:
                             if dockervisops.start(config, cname):
+                                app[cname] = dockervisops.get_container_infos(config,cname)
                                 print "Container %s started"%cname
                             else:
                                 utils.error("Unable to start container %s"%container_name)
+
+        dockervisops.generate_hosts(config, app)
 
         print "App %s started."%appname

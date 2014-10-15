@@ -9,7 +9,7 @@ note: output shown in this documentation is indicative only, please do not refer
 Requirements
 ------------
 
-Before install, ensure Docker is installed (see http://docs.docker.com) in version <= 1.2.0.
+Before install, ensure Docker is installed (see http://docs.docker.com) in version >= 1.2.0.
 
 Platform
 --------

@@ -124,6 +124,10 @@ def _get_image_infos(config,image):
         pass
     return infos
 
+# external access
+def get_container_infos(config,container):
+    return _get_container_infos(config, container)
+
 def _get_container_infos(config, container):
     '''
     Get container infos
