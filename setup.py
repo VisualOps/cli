@@ -27,7 +27,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     scripts=[],
-    install_requires=['cliff','requests','pyyaml','docker-py'],
+    install_requires=['cliff','requests>=2.2.1','six>=1.7.0','pyyaml','docker-py'],
     entry_points={
         'console_scripts': [
             'visualops = visualops.main:main'
@@ -47,7 +47,7 @@ setup(
             'app info      = visualops.cmd.app.info:Info',
             'app stop      = visualops.cmd.app.stop:Stop',
             'app start     = visualops.cmd.app.start:Start',
-            'app reboot    = visualops.cmd.app.reboot:Reboot',
+            'app restart   = visualops.cmd.app.restart:Restart',
             'app clone     = visualops.cmd.app.clone:Clone',
             'app terminate = visualops.cmd.app.terminate:Terminate',
 

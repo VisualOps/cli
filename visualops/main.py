@@ -7,6 +7,8 @@ from cliff.app import App
 from cliff.commandmanager import CommandManager
 from cliff.complete import CompleteCommand
 
+from visualops import VERSION
+
 
 class VisualOpsCLIApp(App):
 
@@ -15,7 +17,7 @@ class VisualOpsCLIApp(App):
     def __init__(self):
         super(VisualOpsCLIApp, self).__init__(
             description='visualops CLI App',
-            version='0.1',
+            version=VERSION,
             command_manager=CommandManager('visualops.cli'),
             )
 

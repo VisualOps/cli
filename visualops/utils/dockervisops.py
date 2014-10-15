@@ -12,6 +12,7 @@ import os
 import docker
 import datetime
 import re
+import socket
 
 import visualops
 from visualops.utils import boot2docker
@@ -23,6 +24,17 @@ requests_log = logging.getLogger("requests")
 requests_log.setLevel(logging.WARNING)
 
 IPS=["PrivateIp","PublicIp","PrivateIpAddress","PublicIpAddress"]
+
+
+# Check if docker exists decorator
+def has_docker(func):
+    def action(*args, **kwargs):
+        try:
+            get_images(args[0])
+        except Exception:
+            utils.error("Unable to find Docker client.\nPlease, ensure Docker is correcly setup.")
+        return func(*args, **kwargs)
+    return action
 
 ## Helpers
 def _get_config():
@@ -109,7 +121,6 @@ def _get_image_infos(config,image):
     try:
         infos = _set_id(client.inspect_image(image))
     except Exception as e:
-        print e
         pass
     return infos
 
@@ -397,7 +408,13 @@ def stop(config, container, timeout=10, *args, **kwargs):
                 print "Container stopped."
                 return True
             else:
-                return False
+                i = 0
+                while is_running(config, dcontainer):
+                    time.sleep(0.1)
+                    if i > 100:
+                        return kill(config,container)
+                    i += 1
+                return True
         else:
             return True
     except Exception as e:
@@ -503,6 +520,9 @@ def restart(config, container, timeout=10, *args, **kwargs):
             return True
     except Exception as e:
         err = e
+    if stop(config, container, timeout):
+        ret = start(config, container)
+        if ret: return True
     utils.error("Unable to restart the container: %s"%err)
     return False
 
@@ -797,6 +817,7 @@ def running(config,
             links=None,
             port_bindings=None,
             force=False,
+            hostname=None,
             *args, **kwargs):
     '''
     Ensure that a container is running. (`docker inspect`)
@@ -854,7 +875,7 @@ def running(config,
         port_binding = (port_bindings.pop() if port_bindings else None)
         ret = installed(config,
                         container,image,entrypoint=entrypoint,command=command,environment=environment,ports=port,
-                        volumes=volumes,mem_limit=mem_limit,cpu_shares=cpu_shares,force=force,hostname=container)
+                        volumes=volumes,mem_limit=mem_limit,cpu_shares=cpu_shares,force=force,hostname=hostname)
         if ret:
             started = start(config,
                 container, binds=binds, port_bindings=port_binding,
@@ -1155,6 +1176,7 @@ _deploy = {
             'mem_limit'     : 'mem_limit',
             'cpu_shares'    : 'cpu_shares',
             'ports'         : 'ports',
+            'hostname'      : 'hostname',
             # running
 #            'publish_all_ports': 'publish_all_ports',
             'binds'         : 'binds',
@@ -1178,6 +1200,7 @@ _deploy = {
 
 
 # preproc deploy a container
+@has_docker
 def preproc_deploy(config, appname, hostname, state):
     if "container" not in state:
         utils.error("Container name missing")
@@ -1185,6 +1208,7 @@ def preproc_deploy(config, appname, hostname, state):
     elif "image" not in state:
         utils.error("Image name missing")
         return {}
+    state["hostname"] = state["container"]
     state["container"] = "%s-%s-%s"%(appname,hostname,state["container"])
     print "--> Preparing to run container(s) %s from image %s ..."%(state["container"],state["image"])
     actions = {}
@@ -1211,6 +1235,7 @@ def preproc_deploy(config, appname, hostname, state):
     return actions
 
 # deploy a container
+@has_docker
 def deploy(config, actions):
     out = {}
     for action in actions:
@@ -1238,7 +1263,7 @@ def generate_hosts(config, app):
 #    hosts = {app[container]["NetworkSettings"]["IPAddress"]:app[container]["Name"].replace('/','') for container in app}
     hosts = {}
     for container in app:
-        hosts[app[container]["NetworkSettings"]["IPAddress"]] = app[container]["Name"].replace('/','')
+        hosts[app[container]["NetworkSettings"]["IPAddress"]] = [app[container]["Name"].replace('/','')]
     for container in app:
         path = (app[container]["HostsPath"]
                 if boot2docker.has() is not True
@@ -1246,7 +1271,7 @@ def generate_hosts(config, app):
         try:
             with open(path, 'r+') as f:
                 for host in hosts:
-                    f.write("%s\t%s\n"%(host,hosts[host]))
+                    f.write("%s\t%s\n"%(host," ".join(hosts[host])))
         except Exception as e:
             utils.error(e)
 ##
@@ -1265,7 +1290,7 @@ def render(config, filename, content):
             hostname = config["hosts_table"].get(obj[0])
             containers = list_containers(config["actions"].get(hostname,{}))
             if len(containers) == 0:
-                ip = "127.0.0.1"
+                ip = socket.gethostbyname(socket.getfqdn())
             elif len(containers) == 1:
                 ip = containers.pop()
             else:
@@ -1275,14 +1300,14 @@ def render(config, filename, content):
 Multiple containers found on instance %s.
 Note: if you are not sure, correctly binded your ports,
       and have an external access to your machine,
-      you can try to use your public IP address.
+      you can try to use your host IP address (default).
 
 Warning: Using localhost (or 127.0.0.1) won't work in most cases
 
 Context: file %s, line %s: %s
 Please, specify which container to use: %s
                                       '''%(hostname,filename,l,line,", ".join(containers)),
-                                      "127.0.0.1")
+                                      socket.gethostbyname(socket.getfqdn()))
             line = re.sub("@{%s\.(.*?)}"%obj[0],ip,line,count=1)
         rendered += "%s\n"%line
         l += 1

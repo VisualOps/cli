@@ -81,7 +81,6 @@ class Start(Command):
                                       if not app_dict["hosts"][hostname][state][container].get("count")
                                       else ["%s_%s"%(container_name,i)
                                             for i in range(1,int(app_dict["hosts"][hostname][state][container]["count"])+1)])
-                        print containers
                         for cname in containers:
                             if dockervisops.start(config, cname):
                                 print "Container %s started"%cname

@@ -109,7 +109,7 @@ def delete_app_info(app_id):
         c.execute("DELETE FROM container WHERE app_id='{0}'".format(app_id))
         c.execute("DELETE FROM app WHERE id='{0}'".format(app_id))
         conn.commit()
-        print 'clear old app %s in db succeed!' % app_id
+        #print 'clear old app %s in db succeed!' % app_id
     except Exception, e:
         raise RuntimeError('clear old app %s in db failed! %s' % (app_id,e))
 
@@ -130,11 +130,11 @@ def start_app(app_id, is_finished=False):
     app_update_state(app_id, state)
 
 
-def reboot_app(app_id, is_finished=False):
+def restart_app(app_id, is_finished=False):
     """
     update app state to 'Running'
     """
-    state = constant.STATE_APP_RUNNING if is_finished else constant.STATE_APP_REBOOTING
+    state = constant.STATE_APP_RUNNING if is_finished else constant.STATE_APP_RESTARTING
     app_update_state(app_id, state)
 
 

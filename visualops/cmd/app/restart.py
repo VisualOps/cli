@@ -8,15 +8,15 @@ from visualops.utils import dockervisops,boot2docker,utils,db,constant
 from visualops.utils.Result import Result
 
 
-class Reboot(Command):
-    "Reboot app"
+class Restart(Command):
+    "Restart app"
 
     log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(Reboot, self).get_parser(prog_name)
-        parser.add_argument('-l', '--local', action='store_true', dest='local', help='reboot local app')
-        parser.add_argument('-f', '--force', action='store_true', dest='force', help='force reboot app')
+        parser = super(Restart, self).get_parser(prog_name)
+        parser.add_argument('-l', '--local', action='store_true', dest='local', help='restart local app')
+        parser.add_argument('-f', '--force', action='store_true', dest='force', help='force restart app')
         parser.add_argument('app_id', nargs='?', default='')
         return parser
 
@@ -43,16 +43,16 @@ class Reboot(Command):
                 #1. check app state
                 state = db.get_app_state(appname)
                 if not parsed_args.force and state != constant.STATE_APP_RUNNING:
-                    raise RuntimeError("App current state is {0}, only support reboot 'Running' app!".format(state))
+                    raise RuntimeError("App current state is {0}, only support restart 'Running' app!".format(state))
 
-                print 'Rebooting local app ...'
-                #2. update to rebooting
-                db.reboot_app(appname)
+                print 'Restarting local app ...'
+                #2. update to restarting
+                db.restart_app(appname)
                 #3. do action
-                self.reboot_app(config, appname, app)
+                self.restart_app(config, appname, app)
                 #4. update to running
-                db.reboot_app(appname,True)
-                print 'Local app %s rebooted!' % appname
+                db.restart_app(appname,True)
+                print 'Local app %s restarted!' % appname
                 is_succeed = True
             except Result,e:
                 print '!!!Expected error occur %s' % str(e.format())
@@ -60,14 +60,14 @@ class Reboot(Command):
                 print '!!!Unexpected error occur %s' % str(e)
             finally:
                 if not is_succeed:
-                    raise RuntimeError('App reboot failed!')
+                    raise RuntimeError('App restart failed!')
         else:
-            print 'Reboot remote app ...(not support yet, please try -l)'
+            print 'Restart remote app ...(not support yet, please try -l)'
             return
 
 
-    # Reboot app
-    def reboot_app(self, config, appname, app_dict):
+    # Restart app
+    def restart_app(self, config, appname, app_dict):
 
         if boot2docker.has():
             boot2docker.run(config, appname)
