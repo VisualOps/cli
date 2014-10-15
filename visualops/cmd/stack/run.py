@@ -162,5 +162,7 @@ def run_stack(config, app_dict):
         for container in actions[hostname]:
             app.update(dockervisops.deploy(config, actions[hostname][container]))
     dockervisops.generate_hosts(config, app)
+    for container in app:
+        dockervisops.restart(config, app[container]["Id"])
     #save user input parameter to app_dict
     utils.persist_app(actions,app_dict)
