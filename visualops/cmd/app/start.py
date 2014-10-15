@@ -69,10 +69,10 @@ class Start(Command):
 
     # Start app
     def start_app(self, config, appname, app_dict):
+        config["force"] = False
         start_app(config, appname, app_dict)
 
     def start_app_old(self, config, appname, app_dict):
-
         if boot2docker.has():
             boot2docker.run(config, appname)
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appname))

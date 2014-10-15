@@ -744,10 +744,11 @@ def installed(config,
         utils.error("Image not found.")
         return None
     cinfos = _get_container_infos(config, name)
+    force = (config["force"] if config.get("force") != None else force)
     if cinfos and force:
         remove_container(config, container=name,force=True)
         print "Old container removed."
-    elif not force:
+    elif cinfos and (not force):
         print "Container found: %s."%cinfos.get("Id")
         return cinfos
 
