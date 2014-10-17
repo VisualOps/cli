@@ -72,6 +72,8 @@ class Restart(Command):
         if boot2docker.has():
             boot2docker.run(config, appname)
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appname))
+            config["chroot"] = os.path.join("/mnt/host",config.get("chroot",""))
+        config["hosts_table"] = app_dict.get("hosts_table",{})
         app = {}
         for hostname in app_dict.get("hosts",{}):
             for state in app_dict["hosts"][hostname]:
