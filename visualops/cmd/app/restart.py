@@ -2,6 +2,7 @@
 
 import logging
 import json
+import os
 
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,db,constant
