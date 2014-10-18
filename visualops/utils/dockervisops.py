@@ -1366,7 +1366,8 @@ Please, specify which container to use: %s
 def render_all(config, content, name="Undefined"):
     if type(content) is dict:
         if ("key" in content) and ("value" in content):
-            return render_all(config,content["value"],content["key"])
+            return {"key":content["key"],
+                    "value":render_all(config,content["value"],content["key"])}
         ret = {}
         for key in content:
             ret[key] = render_all(config,content[key],key)
