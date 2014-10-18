@@ -580,9 +580,9 @@ def start_all(config, containers=None, binds=None, ports=None, port_bindings=Non
     failure = False
     containers_out = []
     for container in containers:
-        started = start(config, container, binds=None, ports=None, port_bindings=None,
-                        lxc_conf=None, publish_all_ports=None, links=None,
-                        privileged=False,
+        started = start(config, container=container, binds=binds, ports=ports, port_bindings=port_bindings,
+                        lxc_conf=lxc_conf, publish_all_ports=publish_all_ports, links=links,
+                        privileged=privileged,
                         *args, **kwargs)
         if is_running(config, container) and started:
             print "Container started, id: %s"%started.get("Id")
@@ -981,7 +981,6 @@ def create_files(config, container, files=[]):
             os.makedirs(dir_path)
         host_path = os.path.join(dir_path,("%s"%path).replace('/','-'))
         content = f.get("value","")
-#        content = render(config, path, f.get("value",""))
         try:
             with open(host_path, 'w') as f:
                 f.write(content)
@@ -1223,6 +1222,7 @@ _deploy = {
             'binds'         : 'binds',
             'port_bindings' : 'port_bindings',
             'count'         : 'count',
+            'volumes'       : 'volumes',
         },
     },
     'actions': {
@@ -1252,8 +1252,6 @@ def preproc_deploy(config, appname, hostname, state, act):
     elif "image" not in state:
         utils.error("Image name missing")
         return {}
-#    state["hostname"] = state["container"]
-#    state["container"] = "%s-%s-%s"%(appname,hostname,state["container"])
     print "--> Preparing to run container(s) %s from image %s ..."%(state["container"],state["image"])
     actions = {}
     for action in _deploy.get('actions',{}).get(act,[]):

@@ -93,15 +93,13 @@ class Run(Command):
         config = utils.gen_config(app.get("name","default-app"))
 
         is_succeed = False
-#        try:
-        if True:
+        try:
             app['stack_id'] = stack_id
             app["name"] = config["appname"]
             run_stack(config, app)
 
             #save app info into local db
             db.create_app( config["appname"], config["appname"], stack_id, '', base64.b64encode(utils.dict2str(app)) )
-        try:
             is_succeed = True
         except Result,e:
             print '!!!Expected error occur %s' % str(e.format())
@@ -154,7 +152,6 @@ def run_stack(config, app_dict, force=True):
         for state in app_dict["hosts"][hostname]:
             if state == "linux.docker.deploy":
                 for container in app_dict["hosts"][hostname][state]:
-#                    app_dict["hosts"][hostname][state][container]["force"] = force
                     app_dict["hosts"][hostname][state][container]["hostname"] = app_dict["hosts"][hostname][state][container].get("container")
                     app_dict["hosts"][hostname][state][container]["container"] = "%s-%s-%s"%(config["appname"],
                                                                                              hostname,
