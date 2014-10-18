@@ -93,13 +93,15 @@ class Run(Command):
         config = utils.gen_config(app.get("name","default-app"))
 
         is_succeed = False
-        try:
+#        try:
+        if True:
             app['stack_id'] = stack_id
             app["name"] = config["appname"]
             run_stack(config, app)
 
             #save app info into local db
             db.create_app( config["appname"], config["appname"], stack_id, '', base64.b64encode(utils.dict2str(app)) )
+        try:
             is_succeed = True
         except Result,e:
             print '!!!Expected error occur %s' % str(e.format())
