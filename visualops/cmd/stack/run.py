@@ -161,7 +161,11 @@ def run_stack(config, app_dict, force=True):
                                                                                 app_dict["hosts"][hostname][state][container],
                                                                                 "deploy"))
     config["actions"] = actions
+    print "------------ OLD ACTIONS"
+    print actions
     actions = dockervisops.render_all(config, actions)
+    print "------------ NEW ACTIONS"
+    print actions
     config["actions"] = actions
     app = {}
     for hostname in actions:
