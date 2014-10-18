@@ -1252,8 +1252,8 @@ def preproc_deploy(config, appname, hostname, state, act):
     elif "image" not in state:
         utils.error("Image name missing")
         return {}
-    state["hostname"] = state["container"]
-    state["container"] = "%s-%s-%s"%(appname,hostname,state["container"])
+#    state["hostname"] = state["container"]
+#    state["container"] = "%s-%s-%s"%(appname,hostname,state["container"])
     print "--> Preparing to run container(s) %s from image %s ..."%(state["container"],state["image"])
     actions = {}
     for action in _deploy.get('actions',{}).get(act,[]):
