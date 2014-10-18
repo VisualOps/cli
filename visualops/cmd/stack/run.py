@@ -160,7 +160,9 @@ def run_stack(config, app_dict, force=True):
                                                                                 hostname,
                                                                                 app_dict["hosts"][hostname][state][container],
                                                                                 "deploy"))
-    config["actions"] = dockervisops.render_all(config, actions)
+    config["actions"] = actions
+    actions = dockervisops.render_all(config, actions)
+    config["actions"] = actions
     app = {}
     for hostname in actions:
         for container in actions[hostname]:
