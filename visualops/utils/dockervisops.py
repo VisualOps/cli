@@ -1279,7 +1279,7 @@ def preproc_deploy(config, appname, hostname, state, act):
 
 # deploy a container
 @has_docker
-def deploy(config, actions):
+def deploy(config, actions, renew=True):
     out = {}
     for action in actions:
         if hasattr(eval(action), '__call__'):
@@ -1288,7 +1288,7 @@ def deploy(config, actions):
                 break
     app = {}
     db.delete_app_info( config["appname"] )
-    for container in out.get("running",[]):
+    for container in (out.get("running",[])+out.get("start_all",[])):
         name = container.get("Name").replace("/","")
         print "--> Container successfully started %s."%name
         db.create_container(config["appname"], container.get("Id"), name)

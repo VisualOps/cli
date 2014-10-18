@@ -47,12 +47,12 @@ class Start(Command):
                     raise RuntimeError("App current state is {0}, only support stop 'Stopped' app!".format(state))
 
                 print 'Starting local app ...'
-                #2. update to starting
-                db.start_app(appname)
+#                #2. update to starting
+#                db.start_app(appname)
                 #3. do action
                 self.start_app(config, appname, app)
-                #4. update to running
-                db.start_app(appname,True)
+#                #4. update to running
+#                db.start_app(appname,True)
                 print 'Local app %s started!' % appname
                 is_succeed = True
             except Result,e:
@@ -73,6 +73,7 @@ class Start(Command):
         start_app(config, appname, app_dict)
 
     def start_app(self, config, appname, app_dict):
+        config["appname"] = appname
         if boot2docker.has():
             boot2docker.run(config, appname)
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appname))
