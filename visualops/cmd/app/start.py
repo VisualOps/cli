@@ -102,6 +102,8 @@ class Start(Command):
 #                            else:
 #                                utils.error("Unable to start container %s"%container_name)
 
+        print "-----------\nACTIONS=%s\n!------------"%actions
+
         config["actions"] = actions
         app = {}
         for hostname in actions:
