@@ -157,7 +157,7 @@ def start_app(config,appname,app_dict,force=False):
                                                                                 hostname,
                                                                                 app_dict["hosts"][hostname][state][container],
                                                                                 "start"))
-    config["actions"] = actions
+    config["actions"] = render_all(config, actions)
     app = {}
     for hostname in actions:
         for container in actions[hostname]:

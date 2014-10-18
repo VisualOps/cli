@@ -1276,7 +1276,7 @@ def preproc_deploy(config, appname, hostname, state, act):
                 actions[action] = params.copy()
         else:
             utils.error("Action not found: %s"%action)
-    return render_all(config, actions)
+    return actions
 
 
 # deploy a container

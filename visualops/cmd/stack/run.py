@@ -160,7 +160,7 @@ def run_stack(config, app_dict, force=True):
                                                                                 hostname,
                                                                                 app_dict["hosts"][hostname][state][container],
                                                                                 "deploy"))
-    config["actions"] = actions
+    config["actions"] = render_all(config, actions)
     app = {}
     for hostname in actions:
         for container in actions[hostname]:
