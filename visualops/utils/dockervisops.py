@@ -1279,7 +1279,7 @@ def preproc_deploy(config, appname, hostname, state, act):
 
 # deploy a container
 @has_docker
-def deploy(config, actions, renew=True):
+def deploy(config, actions):
     out = {}
     for action in actions:
         if hasattr(eval(action), '__call__'):

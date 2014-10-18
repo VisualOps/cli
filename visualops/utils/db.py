@@ -257,3 +257,7 @@ def get_app_state(app_id):
 
     except Exception,e:
         raise RuntimeError('get app state failed! %s' % e)
+
+def get_stackid_from_appid(app_id):
+    #TODO
+    return "stack"

@@ -54,6 +54,9 @@ class Start(Command):
 #                #4. update to running
 #                db.start_app(appname,True)
                 print 'Local app %s started!' % appname
+                #save app info into local db
+                stack_id = db.get_stackid_from_appid(app_id)
+                db.create_app( config["appname"], config["appname"], stack_id, '', base64.b64encode(utils.dict2str(app)) )
                 is_succeed = True
             except Result,e:
                 print '!!!Expected error occur %s' % str(e.format())
