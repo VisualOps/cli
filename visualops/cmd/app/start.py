@@ -3,6 +3,7 @@
 import logging
 import json
 import os
+import base64
 
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,db,constant
@@ -71,10 +72,6 @@ class Start(Command):
 
 
     # Start app
-    def start_app_new(self, config, appname, app_dict):
-        config["force"] = False
-        start_app(config, appname, app_dict)
-
     def start_app(self, config, appname, app_dict):
         config["appname"] = appname
         if boot2docker.has():
