@@ -152,11 +152,17 @@ def run_stack(config, app_dict, force=True):
         for state in app_dict["hosts"][hostname]:
             if state == "linux.docker.deploy":
                 for container in app_dict["hosts"][hostname][state]:
-                    app_dict["hosts"][hostname][state][container]["force"] = force
+                    app_dict["hosts"][hostname][state][container]["hostname"] = app_dict["hosts"][hostname][state][container].get("container")
+                    app_dict["hosts"][hostname][state][container]["container"] = "%s-%s-%s"%(config["appname"],
+                                                                                             hostname,
+                                                                                             app_dict["hosts"][hostname][state][container].get("container",""))
                     actions[hostname][container] = (dockervisops.preproc_deploy(config,
                                                                                 config["appname"],
                                                                                 hostname,
-                                                                                app_dict["hosts"][hostname][state][container]))
+                                                                                app_dict["hosts"][hostname][state][container],
+                                                                                "deploy"))
+    config["actions"] = actions
+    actions = dockervisops.render_all(config, actions)
     config["actions"] = actions
     app = {}
     for hostname in actions:

@@ -3,6 +3,7 @@
 import logging
 import json
 import os
+import base64
 
 from cliff.command import Command
 from visualops.utils import dockervisops,boot2docker,utils,db,constant
@@ -47,13 +48,16 @@ class Start(Command):
                     raise RuntimeError("App current state is {0}, only support stop 'Stopped' app!".format(state))
 
                 print 'Starting local app ...'
-                #2. update to starting
-                db.start_app(appname)
+#                #2. update to starting
+#                db.start_app(appname)
                 #3. do action
                 self.start_app(config, appname, app)
-                #4. update to running
-                db.start_app(appname,True)
+#                #4. update to running
+#                db.start_app(appname,True)
                 print 'Local app %s started!' % appname
+                #save app info into local db
+                stack_id = db.get_stackid_from_appid(app_id)
+                db.create_app( config["appname"], config["appname"], stack_id, '', base64.b64encode(utils.dict2str(app)) )
                 is_succeed = True
             except Result,e:
                 print '!!!Expected error occur %s' % str(e.format())
@@ -69,84 +73,29 @@ class Start(Command):
 
     # Start app
     def start_app(self, config, appname, app_dict):
-        config["force"] = False
-        start_app(config, appname, app_dict)
-
-    def start_app_old(self, config, appname, app_dict):
+        config["appname"] = appname
         if boot2docker.has():
             boot2docker.run(config, appname)
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appname))
-        app = {}
+            config["chroot"] = os.path.join("/mnt/host",config.get("chroot",""))
+        config["hosts_table"] = app_dict.get("hosts_table",{})
+        actions = {}
         for hostname in app_dict.get("hosts",{}):
+            actions[hostname] = {}
             for state in app_dict["hosts"][hostname]:
                 if state == "linux.docker.deploy":
                     for container in app_dict["hosts"][hostname][state]:
-                        container_name = "%s-%s-%s"%(appname,hostname,container)
-                        containers = ([container_name]
-                                      if not app_dict["hosts"][hostname][state][container].get("count")
-                                      else ["%s_%s"%(container_name,i)
-                                            for i in range(1,int(app_dict["hosts"][hostname][state][container]["count"])+1)])
-                        for cname in containers:
-                            if dockervisops.start(config, cname):
-                                app[cname] = dockervisops.get_container_infos(config,cname)
-                                print "Container %s started"%cname
-                            else:
-                                utils.error("Unable to start container %s"%container_name)
+                        actions[hostname][container] = (dockervisops.preproc_deploy(config,
+                                                                                    config["appname"],
+                                                                                    hostname,
+                                                                                    app_dict["hosts"][hostname][state][container],
+                                                                                    "start"))
+        config["actions"] = actions
+        app = {}
+        for hostname in actions:
+            for container in actions[hostname]:
+                app.update(dockervisops.deploy(config, actions[hostname][container]))
 
         dockervisops.generate_hosts(config, app)
 
         print "App %s started."%appname
-
-
-# Run stack
-def start_app(config,appname,app_dict,force=False):
-    config["appname"] = appname
-    config["dirs"] = {
-        "containers": os.path.join(config["config_path"],"docker","containers"),
-        "boot2docker": os.path.join(config["config_path"],"docker","boot2docker"),
-    }
-    for d in config["dirs"]:
-        if not os.path.exists(config["dirs"][d]):
-            os.makedirs(config["dirs"][d])
-    if boot2docker.has():
-        print "Starting Boot2docker ... (this may take a while)"
-        if not os.path.isfile(os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso")):
-            utils.download(config["boot2docker_iso"],os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso"))
-
-        if not boot2docker.gen_config(config, config["appname"]):
-            utils.error("Unable to generate boot2docker configuration")
-            return False
-        boot2docker.mount(config["appname"], [{
-            "volume": "visops_root",
-            "hostpath": "/",
-        },{
-            "volume": "visops_containers",
-            "hostpath": config["dirs"]["containers"],
-        }])
-        if boot2docker.run(config, config["appname"]):
-            print "Boot2docker successfully running!"
-        else:
-            utils.error("Unable to run Boot2docker.")
-        config["chroot"] = os.path.join("/mnt/host",config.get("chroot",""))
-        config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,config["appname"]))
-    config["hosts_table"] = app_dict.get("hosts_table",{})
-    actions = {}
-    for hostname in app_dict.get("hosts",{}):
-        actions[hostname] = {}
-        for state in app_dict["hosts"][hostname]:
-            if state == "linux.docker.deploy":
-                for container in app_dict["hosts"][hostname][state]:
-                    app_dict["hosts"][hostname][state][container]["force"] = force
-                    actions[hostname][container] = (dockervisops.preproc_deploy(config,
-                                                                                config["appname"],
-                                                                                hostname,
-                                                                                app_dict["hosts"][hostname][state][container]))
-    config["actions"] = actions
-    app = {}
-    for hostname in actions:
-        for container in actions[hostname]:
-            app.update(dockervisops.deploy(config, actions[hostname][container]))
-    dockervisops.generate_hosts(config, app)
-
-    #save user input parameter to app_dict
-    utils.persist_app(actions,app_dict)

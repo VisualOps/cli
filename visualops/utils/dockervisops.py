@@ -573,6 +573,24 @@ def start(config, container, binds=None, ports=None, port_bindings=None,
     utils.error("Unable to start your container: %s"%err)
     return None
 
+def start_all(config, containers=None, binds=None, ports=None, port_bindings=None,
+              lxc_conf=None, publish_all_ports=None, links=None,
+              privileged=False,
+              *args, **kwargs):
+    failure = False
+    containers_out = []
+    for container in containers:
+        started = start(config, container=container, binds=binds, ports=ports, port_bindings=port_bindings,
+                        lxc_conf=lxc_conf, publish_all_ports=publish_all_ports, links=links,
+                        privileged=privileged,
+                        *args, **kwargs)
+        if is_running(config, container) and started:
+            print "Container started, id: %s"%started.get("Id")
+            containers_out.append(started)
+        else:
+            failure = True
+            utils.error("Unable to run container: %s - can't start"%container)
+    return containers_out, failure
 
 def get_images(config, name=None, quiet=False, all=True, *args, **kwargs):
     '''
@@ -962,7 +980,7 @@ def create_files(config, container, files=[]):
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         host_path = os.path.join(dir_path,("%s"%path).replace('/','-'))
-        content = render(config, path, f.get("value",""))
+        content = f.get("value","")
         try:
             with open(host_path, 'w') as f:
                 f.write(content)
@@ -1196,14 +1214,30 @@ _deploy = {
             # deploy
             'files'         : _create_files_volumes,
         },
+        "start_all" : {
+            'container'     : 'container',
+            'ports'         : 'ports',
+            'hostname'      : 'hostname',
+            'force'         : 'force',
+            'binds'         : 'binds',
+            'port_bindings' : 'port_bindings',
+            'count'         : 'count',
+            'volumes'       : 'volumes',
+        },
     },
-    'split' : [
-        "create_files",
-        "pull",
-        "running"
-    ],
+    'actions': {
+        'deploy' : [
+            "create_files",
+            "pull",
+            "running"
+        ],
+        'start' : [
+            "start_all"
+        ],
+    },
     'convert': {
         "running": _convert_running,
+        "start_all": _convert_running,
     },
 }
 
@@ -1211,18 +1245,16 @@ _deploy = {
 
 # preproc deploy a container
 @has_docker
-def preproc_deploy(config, appname, hostname, state):
+def preproc_deploy(config, appname, hostname, state, act):
     if "container" not in state:
         utils.error("Container name missing")
         return {}
     elif "image" not in state:
         utils.error("Image name missing")
         return {}
-    state["hostname"] = state["container"]
-    state["container"] = "%s-%s-%s"%(appname,hostname,state["container"])
     print "--> Preparing to run container(s) %s from image %s ..."%(state["container"],state["image"])
     actions = {}
-    for action in _deploy.get('split',[]):
+    for action in _deploy.get('actions',{}).get(act,[]):
         params = {}
         for param in _deploy.get('attr',{}).get(action,{}):
             if not state.get(param): continue
@@ -1244,6 +1276,7 @@ def preproc_deploy(config, appname, hostname, state):
             utils.error("Action not found: %s"%action)
     return actions
 
+
 # deploy a container
 @has_docker
 def deploy(config, actions):
@@ -1255,7 +1288,7 @@ def deploy(config, actions):
                 break
     app = {}
     db.delete_app_info( config["appname"] )
-    for container in out.get("running",[]):
+    for container in (out.get("running",[])+out.get("start_all",[])):
         name = container.get("Name").replace("/","")
         print "--> Container successfully started %s."%name
         db.create_container(config["appname"], container.get("Id"), name)
@@ -1314,12 +1347,32 @@ Note: if you are not sure, correctly binded your ports,
 
 Warning: Using localhost (or 127.0.0.1) won't work in most cases
 
-Context: file %s, line %s: %s
+Context: %s %s, line %s: %s
 Please, specify which container to use: %s
-                                      '''%(hostname,filename,l,line,", ".join(containers)),
+                                      '''%(hostname,
+                                           ("file" if filename else "parameter"),
+                                           filename,
+                                           l,
+                                           line,
+                                           ", ".join(containers)),
                                       socket.gethostbyname(socket.getfqdn()))
             line = re.sub("@{%s\.(.*?)}"%obj[0],ip,line,count=1)
         rendered += "%s\n"%line
         l += 1
     return (rendered[:-1] if (rendered[-1:] == '\n' and content[-1:] != '\n') else rendered)
+
+def render_all(config, content, name="Undefined"):
+    if type(content) is dict:
+        if ("key" in content) and ("value" in content):
+            return {"key":content["key"],
+                    "value":render_all(config,content["value"],content["key"])}
+        ret = {}
+        for key in content:
+            ret[key] = render_all(config,content[key],key)
+        return ret
+    elif type(content) is list:
+        return [render_all(config,item,name) for item in content]
+    elif isinstance(content, basestring):
+        return render(config, name, content)
+    return content
 ##
