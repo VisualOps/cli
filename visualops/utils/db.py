@@ -259,5 +259,21 @@ def get_app_state(app_id):
         raise RuntimeError('get app state failed! %s' % e)
 
 def get_stackid_from_appid(app_id):
-    #TODO
-    return "stack"
+    """
+    get app state
+    """
+    try:
+        conn = get_conn()
+        c = conn.cursor()
+        c.execute("SELECT source_id FROM app WHERE id='{0}' ".format(app_id))
+        result = c.fetchone()
+        conn.close()
+
+        if result:
+            state = result[0]
+            return state
+        else:
+            return None
+
+    except Exception,e:
+        raise RuntimeError('get stack id from app failed! %s' % e)
