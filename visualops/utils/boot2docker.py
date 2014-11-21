@@ -122,7 +122,8 @@ def gen_config(config, appid, replace=True):
     conf = {
         "VM":"\"%s\""%appid,
         "Dir":"\"%s\""%config["dirs"]["boot2docker"],
-        "ISO":"\"%s\""%os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso"),
+        "ISO":"\"%s\""%os.path.join(os.path.expanduser("~/.visualops"),"boot2docker.iso"),
+#        "ISO":"\"%s\""%os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso"),
         "SerialFile":"\"%s\""%os.path.join(config["dirs"]["boot2docker"],"%s.sock"%appid),
     }
     out = re.sub(r"boot2docker profile filename:(.*)\n","", out)

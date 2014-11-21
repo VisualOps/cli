@@ -124,8 +124,8 @@ def run_stack(config, app_dict, force=True):
             os.makedirs(config["dirs"][d])
     if boot2docker.has():
         print "Starting Boot2docker ... (this may take a while)"
-        if not os.path.isfile(os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso")):
-            utils.download(config["boot2docker_iso"],os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso"))
+#        if not os.path.isfile(os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso")):
+#            utils.download(config["boot2docker_iso"],os.path.join(config["dirs"]["boot2docker"],"boot2docker.iso"))
 
         if not boot2docker.gen_config(config, config["appname"]):
             utils.error("Unable to generate boot2docker configuration")
