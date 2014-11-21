@@ -42,3 +42,9 @@ Use the help command to get help about one specific command:
 ::
 
     $ visualops help [command]
+
+Notes
+-----
+
+When using `boot2docker` on OSX, ensure the latest version is installed (1.3.1 tested).
+Not that only files/directories located under /Users will be mounted.
