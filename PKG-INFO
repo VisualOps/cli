@@ -1,10 +1,10 @@
-Metadata-Version: 0.0.1
+Metadata-Version: 1.0.0
 Name: visualops
-Version: 0.0.1
+Version: 1.0.0
 Summary: VisualOps CLI
 Home-page: https://github.com/madeiracloud/cli
-Author: Peng Zhao
-Author-email: peng@visualops.io
-License: UNKNOWN
-Description: UNKNOWN
+Author: Thibault Bronchain
+Author-email: thibault@visualops.io
+License: Apache License v2.0
+Description: CLI interface for VisualOps
 Platform: UNKNOWN
