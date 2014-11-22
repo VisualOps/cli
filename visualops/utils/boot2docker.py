@@ -41,6 +41,15 @@ def ip(config, appid):
         return "127.0.0.1"
     return out
 
+# Set boot2docker VM configuration
+def set_config(config, appid):
+    conf = shellinit(config,appid).split("\n")
+    for v in conf:
+        v = v.strip()
+        if v:
+            v = v.split(" ")[-1].split("=")
+            os.environ[v[0]] = v[1]
+
 # Run boot2docker VM
 def run(config, appid, verbose=True):
     if running(config, appid, verbose) is not True:

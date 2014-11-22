@@ -70,6 +70,7 @@ class Stop(Command):
 
         if boot2docker.has():
             config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,appname))
+            boot2docker.set_config(config,appname)
         for hostname in app_dict.get("hosts",{}):
             for state in app_dict["hosts"][hostname]:
                 if state == "linux.docker.deploy":

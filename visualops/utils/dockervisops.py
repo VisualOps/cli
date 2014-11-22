@@ -10,10 +10,13 @@ note: Part of these functions have been extracted and/or modified
 import time
 import json
 import os
-import docker
 import datetime
 import re
 import socket
+
+import docker
+from docker.client import Client
+from docker.utils import kwargs_from_env
 
 import visualops
 from visualops.utils import boot2docker
@@ -74,7 +77,12 @@ def _get_client(config, url=None, version=None, timeout=None):
     '''
     if config.get("docker_sock"):
         url=config["docker_sock"]
-    client = docker.Client(base_url=url)
+    try:
+        client = docker.Client(**kwargs_from_env())
+        print "New docker version detected"
+    except Exception:
+        client = docker.Client(base_url=url)
+        print "Old docker version detected"
     # force 1..5 API for registry login
     if not version:
         if client._version == '1.4':

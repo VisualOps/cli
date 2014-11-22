@@ -145,6 +145,7 @@ def run_stack(config, app_dict, force=True):
             utils.error("Unable to run Boot2docker.")
 #        config["chroot"] = os.path.join("/mnt/host",config.get("chroot",""))
         config["docker_sock"] = "tcp://%s:2375"%(boot2docker.ip(config,config["appname"]))
+        boot2docker.set_config(config,config["appname"])
     config["hosts_table"] = app_dict.get("hosts_table",{})
     actions = {}
     for hostname in app_dict.get("hosts",{}):
