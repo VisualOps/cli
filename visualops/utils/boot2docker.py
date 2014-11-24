@@ -23,10 +23,13 @@ def running(config, appid, verbose=False):
         return False
     if not re.search("running",out): return False
     if verbose:
+        ip_addr = ip(config,appid)
         print "Boot2docker VM ip: %s\nTo use the docker client in a terminal, set the following environment variable:\n\n%s"%(
-            ip(config,appid),
+            ip_addr,
             shellinit(config,appid)
         )
+        print "If you are using boot2docker >= 1.3.0, you must add an entry to you host file in order to be able to use the TLS authentication.\n\nPlease, add the following entry to your local host file (`/etc/hosts`):\n\n%s boot2docker\n\n"%(ip_addr)
+        raw_input("Press Enter to continue...")
     return True
 
 # Get boot2docker VM IP
