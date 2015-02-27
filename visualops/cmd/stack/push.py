@@ -27,5 +27,5 @@ class Push(Command):
         # print 'pushing %s to visualops.io ....' % stack['id']
         # with open(os.path.join(os.getcwd(), '/%s.yaml' % stack['id'])) as f:
         #     stack = f.readlines()
-        # stack = client.stack_save(username, session_id, stack)
+        # stack = client.stack_save(username, session_id, key_id, stack)
         # print '%s is pushed to remote' % stack['id']

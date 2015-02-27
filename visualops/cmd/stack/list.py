@@ -21,15 +21,20 @@ class List(Lister):
         (username, session_id)   = utils.load_session()
         if not(username and session_id):
             return (),()
- 
+
+        (project_name, project_id, key_id) = utils.load_current_project()
+        if not key_id:
+            return (),()
+
         # get stack list
-        (err, result) = rpc.stack_list(username, session_id, parsed_args.region_name)
+        (err, result) = rpc.stack_list(username, session_id, key_id, parsed_args.region_name)
+
         if err:
             print('Get stack list failed')
             utils.hanlde_error(err,result)
         else:
             self.log.debug('> get {0} stack(s) list succeed!\n'.format(len(result)))
-            print "Stacks:"
+            print "Stack list in %s(%s):" % (project_name,project_id)
             return (('Id', 'Name', 'Region', 'URL'),
                 ((stack["id"], stack["name"], stack["region"], constant.IDE_URL + stack['id']) for stack in result if parsed_args.filter_name.lower() in stack['name'].lower() )
             )

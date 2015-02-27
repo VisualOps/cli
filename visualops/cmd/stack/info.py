@@ -23,9 +23,13 @@ class Info(ShowOne):
         if not(username and session_id):
             return (),()
 
+        (project_name, project_id, key_id) = utils.load_current_project()
+        if not key_id:
+            return (),()
+
         # get stack info
         stack_id = parsed_args.stack_id
-        (err, result) = rpc.stack_info(username, session_id, None, [ stack_id ])
+        (err, result) = rpc.stack_info(username, session_id, key_id, None, [ stack_id ])
 
         if err:
             print('Get stack info failed')
@@ -57,7 +61,7 @@ class Info(ShowOne):
 
                     self.log.debug(log_str)
 
-            print "Stacks Info:"
+            print "Stack Info in %s(%s):" % (project_name,project_id)
             columns = ( 'Id',
                         'Name',
                         'Region',

@@ -3,9 +3,10 @@
 import os
 
 #IDE URL
-IDE_URL = 'http://ide.visualops.io/ops/'
-API_URL = 'http://api.visualops.io'
+IDE_URL = 'https://ide.visualops.io/workspace/'
+API_URL = 'https://api.visualops.io'
 DB_FILE = os.path.expanduser("~/.visualops/db")
+DEFAULT_PROJECT = 'My Workspace'
 
 #app state
 #STATE_APP_INITIALIZING = "Initializing"

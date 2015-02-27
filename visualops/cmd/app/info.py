@@ -42,7 +42,7 @@ class Info(ShowOne):
                 print "Can not found local app data '%s' " % app_id
                 return ((),())
             print '\nApp data:'
-            print json.dumps(utils.str2dict(base64.b64decode(app_data[0])), indent=4) 
+            print json.dumps(utils.str2dict(base64.b64decode(app_data[0])), indent=4)
 
 
             #3. output container info
@@ -56,9 +56,15 @@ class Info(ShowOne):
             print 'Show remote app info....'
 
             (username, session_id) = utils.load_session()
+            if not(username and session_id):
+                return (),()
+
+            (project_name, project_id, key_id) = utils.load_current_project()
+            if not key_id:
+                return (),()
 
             # get app info
-            (err, result) = rpc.app_info(username, session_id, None, [app_id])
+            (err, result) = rpc.app_info(username, session_id, key_id, None, [app_id])
 
             if err:
                 print('Get app info failed')
@@ -90,7 +96,7 @@ class Info(ShowOne):
 
                         self.log.debug(log_str)
 
-                print "App Info:"
+                print "App Info in %s(%s):" % (project_name,project_id)
                 columns = ( 'Id',
                             'Name',
                             'Region',

@@ -35,6 +35,13 @@ def save_session(result):
             output += 'session_id = ' + result['session_id'] + '\n'
             file.write( output )
 
+        #Delete ~/.visualops/project
+        project_cfg = home_folder + '/.visualops/project'
+        if os.path.isfile(project_cfg):
+            os.remove(project_cfg)
+            log = logging.getLogger(__name__)
+            log.debug('>%s removed' % project_cfg)
+
     except Exception:
         return False
 
@@ -53,6 +60,45 @@ def load_session():
         return (username, session_id)
     except:
         print('load session failed, try login again!')
+        return (None, None)
+
+def set_current_project(project):
+    try:
+        home_folder = os.path.expanduser('~')
+
+        #Ensure ~/.visualops exist
+        if os.path.isdir(home_folder + '/.visualops'):
+            pass
+        else:
+            os.mkdir(home_folder + '/.visualops')
+
+        #Save project to ~/.visualops/project
+        project_cfg = home_folder + '/.visualops/project'
+        with open( project_cfg, 'w+') as file:
+            output = '[config]\n'
+            output += 'project_name = ' + (project['name'] if 'name' in project else constant.DEFAULT_PROJECT) + '\n'
+            output += 'project_id = ' + project['id'] + '\n'
+            output += 'key_id = ' + project['credentials'][0]['id'] + '\n'
+            file.write( output )
+
+    except Exception:
+        return False
+
+def load_current_project():
+    try:
+        home_folder = os.path.expanduser('~')
+        project_cfg = home_folder + '/.visualops/project'
+        if not os.path.isfile(project_cfg):
+            print('please run "visualops project list" first!')
+            return (None, None)
+        config = ConfigParser.SafeConfigParser()
+        config.read(project_cfg)
+        project_name = config.get('config','project_name')
+        project_id   = config.get('config','project_id')
+        key_id       = config.get('config','key_id')
+        return (project_name, project_id,key_id)
+    except:
+        print('load project failed, try login again!')
         return (None, None)
 
 #Handle AppService Error
