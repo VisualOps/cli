@@ -26,10 +26,14 @@ class Pull(Command):
         if not(username and session_id):
             return (),()
 
+        (project_name, project_id, key_id) = utils.load_current_project()
+        if not key_id:
+            return (),()
+
         stack_id = parsed_args.stack_id
 
         print 'Pulling %s from remote ....\n' % stack_id
-        (err, result) = rpc.stack_info(username, session_id, None, [stack_id])
+        (err, result) = rpc.stack_info(username, session_id, key_id, None, [stack_id])
 
         if err:
             print('Pull stack failed')

@@ -35,6 +35,7 @@ class Login(Command):
         else:
 
             print('\nLogin Success!')
+            print('\nPlease run "visualops project list" to get project info!')
             # Save session
             self.log.debug('> start save session...')
             utils.save_session(result)

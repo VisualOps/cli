@@ -29,10 +29,14 @@ class Clone(Command):
         if not(username and session_id):
             return (),()
 
+        (project_name, project_id, key_id) = utils.load_current_project()
+        if not key_id:
+            return (),()
+
         app_id = parsed_args.app_id
 
         print 'Pulling %s from remote ....\n' % app_id
-        (err, result) = rpc.app_info(username, session_id, None, [app_id])
+        (err, result) = rpc.app_info(username, session_id, key_id, None, [app_id])
 
         if err:
             utils.hanlde_error(err,result)
