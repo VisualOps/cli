@@ -30,15 +30,22 @@ class List(Lister):
             print 'List remote app....'
 
             (username, session_id) = utils.load_session()
+            if not(username and session_id):
+                return (),()
+
+            (project_name, project_id, key_id) = utils.load_current_project()
+            if not key_id:
+                return (),()
 
             # get app list
-            (err, result) = rpc.app_list(username, session_id, region_name)
+            (err, result) = rpc.app_list(username, session_id, key_id, region_name)
 
             if err:
                 print('Get app list failed')
                 utils.hanlde_error(err,result)
             else:
                 self.log.debug('> get {0} app list succeed!'.format(len(result)))
+                print "App list in %s(%s):" % (project_name,project_id)
                 return (('Id', 'Name', 'Region', 'State'),
                     ((app["id"], app["name"], app["region"], app["state"]) for app in result if (filter_name.lower() in app['name'].lower() and app["state"] in ["Running","Stopped"]) )
                 )

@@ -36,6 +36,9 @@ setup(
             'login      = visualops.cmd.session:Login',
             'logout     = visualops.cmd.session:Logout',
 
+            'project list   = visualops.cmd.project.list:List',
+            'project select   = visualops.cmd.project.select:Select',
+
             'stack list   = visualops.cmd.stack.list:List',
             'stack info   = visualops.cmd.stack.info:Info',
             'stack pull   = visualops.cmd.stack.pull:Pull',
