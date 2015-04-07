@@ -1,6 +1,8 @@
 # Copyright 2014 MadeiraCloud LTD.
 
 import logging
+import os
+import os.path
 from visualops.utils import rpc,utils,constant
 from cliff.lister import Lister
 
@@ -31,14 +33,26 @@ class List(Lister):
 
             #set current workspace
             if len(result) > 0:
-                current_project = result[0]
+
+                home_folder = os.path.expanduser('~')
+                project_cfg = home_folder + '/.visualops/project'
+                project_name=""
+                current_project = None
+
+                if os.path.isfile(project_cfg):
+                    (project_name, project_id, key_id) = utils.load_current_project()
+
                 for project in result:
                     if not 'name' in project:
-                        current_project = project
-                        break
+                        my_project = project
+                    else:
+                        if project['name'] == project_name:
+                            current_project = project
+                if not current_project:
+                    current_project = my_project
                 utils.set_current_project(current_project)
-                print 'Set "%s" as current project\n' % (current_project["name"] if 'name' in current_project else constant.DEFAULT_PROJECT)
-
+                print '\n"%s" is current project' % (current_project["name"] if 'name' in current_project else constant.DEFAULT_PROJECT)
+                print 'Please run "visualops project select <project id>" to set current project.\n'
 
             print "Projects:"
             return (('Id', 'Name', 'URL'),
