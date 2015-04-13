@@ -27,7 +27,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     scripts=[],
-    install_requires=['cliff','requests>=2.2.1','six>=1.7.0','pyyaml','docker-py'],
+    install_requires=['cliff','requests>=2.6.0','six>=1.9.0','pyyaml','docker-py'],
     entry_points={
         'console_scripts': [
             'visualops = visualops.main:main'
