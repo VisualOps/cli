@@ -1042,7 +1042,7 @@ def _convert_running(config, appname, hostname, addin):
 
             # get user input
             ui = utils.user_param(config,
-                                  "Update port binding for %s (container=host)"%addin["container"],
+                                  "Update port binding for %s (host=container)"%addin["container"],
                                   ("%s=%s"%(key,value)
                                    if key not in config["port_bindings"][hostname].get(addin["container"],{})
                                    else "%s=%s"%((key if key else ""),(value if value else ""))))

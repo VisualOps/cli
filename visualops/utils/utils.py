@@ -272,8 +272,8 @@ def persist_app(actions, app_dict):
                     actions_port_bindings  = actions_container['port_bindings']
                     for (port,v4) in actions_port_bindings.items():
                         bingding = {}
-                        bingding['key']   = port
-                        bingding['value'] = v4['HostPort']
+                        bingding['key']   = v4['HostPort']
+                        bingding['value'] = port
                         app_dict_port_bindings.append(bingding)
                     app_dict_container['port_bindings'] = app_dict_port_bindings
 
