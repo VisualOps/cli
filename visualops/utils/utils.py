@@ -90,7 +90,7 @@ def load_current_project():
         project_cfg = home_folder + '/.visualops/project'
         if not os.path.isfile(project_cfg):
             print('please run "visualops project list" first!')
-            return (None, None)
+            return (None, None, None)
         config = ConfigParser.SafeConfigParser()
         config.read(project_cfg)
         project_name = config.get('config','project_name')
@@ -99,7 +99,7 @@ def load_current_project():
         return (project_name, project_id,key_id)
     except:
         print('load project failed, try login again!')
-        return (None, None)
+        return (None, None, None)
 
 #Handle AppService Error
 def hanlde_error(err, result):
